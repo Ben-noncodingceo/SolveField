@@ -100,6 +100,20 @@ Owner: @Olivia (测试/运营) · Dev: @David · Plan: @Cindy · v1 (2026-07-17)
 **生产前置**：D1+Workers+R2 token（跑远程迁移）；KV namespace 真实 id 填入 `wrangler.jsonc`（占位 `KV_NAMESPACE_ID` 会导致部署失败——binding 未完成即阻断，不占位假通过）。
 
 ### Phase 2｜内容垂直切片：中英双语 + KaTeX
+
+#### task #12（Doug）｜只读题目前端 `/problems` + `/problems/[slug]`（纵切并行，不动 schema）
+| 验收点 | 判定 |
+|---|---|
+| `/problems` 列表页：仅列出**已 published** 题目 | 未 published 前端不可见（匿名） |
+| `/problems/[slug]` 详情页：渲染 `contentOriginal`（Markdown + LaTeX） | 内容完整、无原始标记泄漏 |
+| i18n zh/en 切换；缺失翻译**优雅回退到 originalLanguage** | 不留空白、可切回原文 |
+| KaTeX 行内 `$...$` + 独立 `$$...$$`，`throwOnError:false`，与后台/ingest 契约**同一套 macros** | §附A 公式集全绿、两处渲染一致 |
+| 匿名访客可读 published，**不暴露草稿/未审核内容** | 符合全局访问规则 |
+| 纯新增前端路由/组件，不改 Payload schema/迁移（需只读新字段先与 David 对齐） | 无 schema/migration 变更 |
+| 门禁：strict tsc / Next build / OpenNext worker build 三绿；SSR/OpenNext 渲染正常；README 三段 | 交付 @Olivia |
+| 回归：`/` 200、`/admin` 200、`/api/problems` 已 published 不受影响 | 生产冒烟通过 |
+
+#### Phase 2 整体（含后台录入/编辑，属 David 地基线，非 #12 范围）
 | 验收点 | 判定 |
 |---|---|
 | 打通 后台录入→D1→API→前台详情页 | 端到端 |
