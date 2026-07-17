@@ -86,7 +86,14 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 
 ## 开发状态
 
-- **当前阶段**：Phase 0 ✅ 完成（技术探针通过，可行）。
+> 详见 [`STATUS.md`](STATUS.md)。
+
+- **当前阶段**：Phase 1 ✅ 代码完成（数据与权限底座），待 Olivia 生产验收。
+- **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（`pnpm seed`）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
+- **Phase 1 下一步**：合并 main → Olivia 用 D1 权限 token 部署（应用新迁移）+ 验权限/唯一约束/seed → 通过后 Cindy 开 Phase 2。需账号侧：D1 权限 token、KV namespace id、确认 CF 自动部署。
+
+### 历史
+- **Phase 0** ✅ 完成（技术探针通过，可行）。
 - **本次变更**：用 Payload 官方 `with-cloudflare-d1` 模板初始化骨架；修复 4 处模板/版本漂移（CSS 类型声明、`generatePayloadViewport`、`storage→plugins`、`build` 脚本）+ 离线可构建改造；`next build` 与 OpenNext Worker 打包全绿；纳入 `TEST_MATRIX.md` 与 `content/` 共享真相；产出 `docs/ADR-001-cloudflare.md`。域名定为 `solvefield.playphysics.net`（子域名，无 basePath）。
 - **已配**：D1 数据库 `solvefield`（id `392ee4ac-87e8-46e4-a25b-283abdbb2e2f`）与 R2 桶 `solvefield` 已建，D1 id 已填入 `wrangler.jsonc`；账号侧已连 GitHub + 绑定 + secret + 域名。
 - **修复中（生产 500）**：首次部署后所有服务端路由 500，根因是运行时上下文判据用了构建期变量 `CLOUDFLARE_API_TOKEN`，导致 Worker 运行时误加载 `wrangler` → `No such module "wrangler"`。已改为按 `navigator.userAgent === 'Cloudflare-Workers'` 判运行时（Worker 走原生 binding，绝不加载 wrangler）。详见 ADR 事故记录。

@@ -10,6 +10,10 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Competitions } from './collections/Competitions'
+import { Problems } from './collections/Problems'
+import { ProblemRatings } from './collections/ProblemRatings'
+import { ProblemEdits } from './collections/ProblemEdits'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -59,13 +63,14 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Competitions, Problems, ProblemRatings, ProblemEdits],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
+  // push:false → rely on committed migrations (mandatory for D1), not dev auto-sync.
+  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
   logger: isProduction ? cloudflareLogger : undefined,
   // Storage adapters are configured as plugins in Payload 3.x (the template's
   // top-level `storage` key is from a newer API). See docs/ADR-001-cloudflare.md.

@@ -41,6 +41,15 @@
     //   "bucket_name": "<BUCKET_NAME>",
     // },
   ],
+  // KV binding prepared (Phase 1). No business caching yet — used from Phase 4
+  // (rate-limit / hot cache). Create the namespace and fill the id before deploy:
+  //   wrangler kv namespace create solvefield-kv
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "KV_NAMESPACE_ID",
+    },
+  ],
 
   // Here's how to configure an additional environment
   // It can be deployed with `CLOUDFLARE_ENV=staging pnpm run deploy`

@@ -69,6 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    competitions: Competition;
+    problems: Problem;
+    'problem-ratings': ProblemRating;
+    'problem-edits': ProblemEdit;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +82,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    competitions: CompetitionsSelect<false> | CompetitionsSelect<true>;
+    problems: ProblemsSelect<false> | ProblemsSelect<true>;
+    'problem-ratings': ProblemRatingsSelect<false> | ProblemRatingsSelect<true>;
+    'problem-edits': ProblemEditsSelect<false> | ProblemEditsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -123,6 +131,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'user' | 'editor' | 'admin';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -161,6 +170,206 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "competitions".
+ */
+export interface Competition {
+  id: number;
+  /**
+   * 全局唯一稳定标识，如 ipho-2026
+   */
+  slug: string;
+  nameZh: string;
+  nameEn: string;
+  year: number;
+  level: 'national' | 'regional' | 'world';
+  descriptionZh?: string | null;
+  descriptionEn?: string | null;
+  /**
+   * 封面图（走 R2）
+   */
+  cover?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "problems".
+ */
+export interface Problem {
+  id: number;
+  /**
+   * 全局唯一，如 ipho-2026-t1
+   */
+  slug: string;
+  competition: number | Competition;
+  /**
+   * 难度 1–5，见 content/difficulty-rubric.md
+   */
+  difficulty: number;
+  /**
+   * 知识点二级标签（多选），值域来自 content/tags-taxonomy.json
+   */
+  tags?:
+    | (
+        | 'kinematics'
+        | 'newtonian-dynamics'
+        | 'energy-momentum'
+        | 'rigid-body'
+        | 'oscillations-waves'
+        | 'gravitation-orbits'
+        | 'fluid-mechanics'
+        | 'continuum-elasticity'
+        | 'nonlinear-chaos'
+        | 'electrostatics'
+        | 'dc-current'
+        | 'magnetostatics'
+        | 'induction'
+        | 'ac-transient'
+        | 'magnetic-materials'
+        | 'maxwell-em-waves'
+        | 'thermodynamics-laws'
+        | 'kinetic-theory'
+        | 'statistical-physics'
+        | 'phase-transitions'
+        | 'heat-transfer'
+        | 'geometric-optics'
+        | 'wave-optics'
+        | 'photometry-radiation'
+        | 'modern-optics'
+        | 'special-relativity'
+        | 'general-relativity'
+        | 'quantum-basics'
+        | 'atomic-molecular'
+        | 'nuclear-particle'
+        | 'condensed-matter'
+        | 'astrophysics-cosmology'
+        | 'dimensional-analysis'
+        | 'approximation-perturbation'
+        | 'calculus-ode'
+        | 'vectors-frames'
+        | 'numerical-estimation'
+        | 'data-analysis'
+      )[]
+    | null;
+  /**
+   * 题目原始语言 ISO 码，如 en / ru / de
+   */
+  originalLanguage: string;
+  /**
+   * 题干原始语言文本（LaTeX）
+   */
+  contentOriginal: string;
+  /**
+   * 中文题干（LaTeX），缺则留空
+   */
+  contentZh?: string | null;
+  /**
+   * 英文题干（LaTeX），缺则留空
+   */
+  contentEn?: string | null;
+  answerOriginal?: string | null;
+  answerZh?: string | null;
+  answerEn?: string | null;
+  /**
+   * 出处，如 'IPhO 2026 Theory T1'
+   */
+  source: string;
+  /**
+   * 官方解析链接，可选
+   */
+  officialSolutionUrl?: string | null;
+  /**
+   * 是否允许用户提交 Wiki 修改提案
+   */
+  allowWikiEdit?: boolean | null;
+  status: 'draft' | 'pending' | 'published' | 'archived';
+  totalLikes?: number | null;
+  totalDislikes?: number | null;
+  avgScore?: number | null;
+  scoreCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "problem-ratings".
+ */
+export interface ProblemRating {
+  id: number;
+  problem: number | Problem;
+  user: number | User;
+  /**
+   * -1 踩 / 0 无 / 1 赞
+   */
+  vote: number;
+  /**
+   * 1–5 星，可空
+   */
+  score?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "problem-edits".
+ */
+export interface ProblemEdit {
+  id: number;
+  targetProblem: number | Problem;
+  submitUser: number | User;
+  editType: 'content' | 'answer' | 'formula' | 'supplement';
+  editMultiContent?: {
+    contentOriginal?: string | null;
+    contentZh?: string | null;
+    contentEn?: string | null;
+    answerOriginal?: string | null;
+    answerZh?: string | null;
+    answerEn?: string | null;
+  };
+  /**
+   * 修改说明
+   */
+  remark?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * 审核通过时记录的原题快照
+   */
+  beforeSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 审核通过时记录的新内容快照
+   */
+  afterSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  reviewedBy?: (number | null) | User;
+  reviewedAt?: string | null;
+  /**
+   * 驳回理由（驳回时必填）
+   */
+  rejectReason?: string | null;
+  /**
+   * 关联的题目版本号（审计）
+   */
+  targetVersion?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -190,6 +399,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'competitions';
+        value: number | Competition;
+      } | null)
+    | ({
+        relationTo: 'problems';
+        value: number | Problem;
+      } | null)
+    | ({
+        relationTo: 'problem-ratings';
+        value: number | ProblemRating;
+      } | null)
+    | ({
+        relationTo: 'problem-edits';
+        value: number | ProblemEdit;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -238,6 +463,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -270,6 +496,90 @@ export interface MediaSelect<T extends boolean = true> {
   filesize?: T;
   width?: T;
   height?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "competitions_select".
+ */
+export interface CompetitionsSelect<T extends boolean = true> {
+  slug?: T;
+  nameZh?: T;
+  nameEn?: T;
+  year?: T;
+  level?: T;
+  descriptionZh?: T;
+  descriptionEn?: T;
+  cover?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "problems_select".
+ */
+export interface ProblemsSelect<T extends boolean = true> {
+  slug?: T;
+  competition?: T;
+  difficulty?: T;
+  tags?: T;
+  originalLanguage?: T;
+  contentOriginal?: T;
+  contentZh?: T;
+  contentEn?: T;
+  answerOriginal?: T;
+  answerZh?: T;
+  answerEn?: T;
+  source?: T;
+  officialSolutionUrl?: T;
+  allowWikiEdit?: T;
+  status?: T;
+  totalLikes?: T;
+  totalDislikes?: T;
+  avgScore?: T;
+  scoreCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "problem-ratings_select".
+ */
+export interface ProblemRatingsSelect<T extends boolean = true> {
+  problem?: T;
+  user?: T;
+  vote?: T;
+  score?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "problem-edits_select".
+ */
+export interface ProblemEditsSelect<T extends boolean = true> {
+  targetProblem?: T;
+  submitUser?: T;
+  editType?: T;
+  editMultiContent?:
+    | T
+    | {
+        contentOriginal?: T;
+        contentZh?: T;
+        contentEn?: T;
+        answerOriginal?: T;
+        answerZh?: T;
+        answerEn?: T;
+      };
+  remark?: T;
+  status?: T;
+  beforeSnapshot?: T;
+  afterSnapshot?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  rejectReason?: T;
+  targetVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
