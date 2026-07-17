@@ -88,4 +88,5 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 
 - **当前阶段**：Phase 0 ✅ 完成（技术探针通过，可行）。
 - **本次变更**：用 Payload 官方 `with-cloudflare-d1` 模板初始化骨架；修复 4 处模板/版本漂移（CSS 类型声明、`generatePayloadViewport`、`storage→plugins`、`build` 脚本）+ 离线可构建改造；`next build` 与 OpenNext Worker 打包全绿；纳入 `TEST_MATRIX.md` 与 `content/` 共享真相；产出 `docs/ADR-001-cloudflare.md`。域名定为 `solvefield.playphysics.net`（子域名，无 basePath）。
-- **下一步**：Olivia 按 `TEST_MATRIX.md` D1–D9 + Phase 0 门禁验证 & 建立 GitHub→Cloudflare 自动部署；通过后进入 Phase 1（5 张 Collection + 权限，字段对齐 `content/seed.schema.json`）。
+- **已配**：D1 数据库 `solvefield`（id `392ee4ac-87e8-46e4-a25b-283abdbb2e2f`）与 R2 桶 `solvefield` 已由账号侧创建，D1 id 已填入 `wrangler.jsonc`。
+- **下一步**：账号侧完成"连 GitHub + 绑定 D1/R2 + 设 `PAYLOAD_SECRET` + 首次迁移 + 绑域名"→ Olivia 按 `TEST_MATRIX.md` D1–D9 做生产 smoke；通过后进入 Phase 1（5 张 Collection + 权限，字段对齐 `content/seed.schema.json`）。
