@@ -33,13 +33,19 @@
 ## 分阶段开发路线（每阶段可独立运行/部署/验收）
 
 - **Phase 0 · 技术可行性探针** ✅ *（当前已完成）* — 最小 Payload+CF 骨架，验证 D1/R2/构建/Worker 打包，产出 ADR。
-- **Phase 1 · 数据模型 + 权限** — 5 张 Collection（Competitions/Problems/ProblemEdits/ProblemRatings/Users）+ Media；user/editor/admin 权限；migration/seed。
+- **Phase 1 · 数据模型 + 权限** ✅ — 5 张 Collection（Competitions/Problems/ProblemEdits/ProblemRatings/Users）+ Media；user/editor/admin 权限；migration/seed；生产验收全绿。
+- **Phase 1A · Agent 辅助入库（高优先）** — PDF/图片由 Agent 整理成可追溯导入草稿；管理员预览修改、审核通过后才进入正式题库，Agent 不可直接发布。
+- **Phase 1.1 · 邮箱注册** — 独立匿名注册端点，服务端强制 `role=user`；防角色注入、重复邮箱、弱密码、枚举与滥用。
 - **Phase 2 · 中英双语 + KaTeX** — next-intl；题目三语分离存储；KaTeX SSR 渲染 + 后台预览。
 - **Phase 3 · 题库门户 + 筛选** — 列表/详情/分页；多条件组合筛选进 URL；D1 索引。
 - **Phase 4 · 点赞评分** — 唯一记录防刷；原子更新统计；KV 限流/缓存。
+- **Phase 4B · 整卷导出** — 按竞赛/年份/试卷导出题干版或题干+解析版，支持中文/英文/原文与打印友好 HTML→PDF。
 - **Phase 5 · Wiki 提案闭环** — 提交→审核→通过更新+版本 / 驳回附理由；审计快照。
+- **Phase 5B · 用户投稿新题** — Markdown+LaTeX 分栏编辑、图片上传、同配置预览；只进入待审稿，不开放 Problems 直写。
+- **Phase 5C · AI 补全** — 缺失语言/题干/解析的 AI 草稿，保留字段级来源与 AI 标识，管理员确认后才展示。
 - **Phase 6 · Cloudflare 生产化** — 正式 binding、Preview/Prod 隔离、迁移/回滚/备份。
 - **Phase 7 · 门户完善 + 上线验收** — 用户中心、响应式、SEO、回归、上线。
+- **Phase 8A–8D · 可选 Web3 信任层（远期）** — 版本存证、贡献者凭证、可选 SIWE、IPFS 归档；不做代币/NFT/DAO，也不把整库上链。
 
 分工：**开发** David · **测试/运营** Olivia · **规划/门禁** Cindy · **内容（标签/难度/KaTeX/seed）** Ted。
 
@@ -89,11 +95,12 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 
 > 详见 [`STATUS.md`](STATUS.md)。
 
-- **当前阶段**：Phase 1 ✅ 代码完成（数据与权限底座），待 Olivia 生产验收。
+- **当前阶段**：Phase 1 ✅ 生产验收全绿；正在上线 Logo/首页收尾批次。
 - **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题、Users 目录仅 admin 可见且 user/editor 只读自己）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（本地 `pnpm seed`、生产 `pnpm run seed:remote`，均带结果校验）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
 - **构建期 D1 隔离**：`pnpm build` 与 OpenNext build 设置 `SOLVEFIELD_EPHEMERAL_PROXY=1`，使并行 page-data worker 使用不落盘的 Miniflare bindings，避免共享 `.wrangler/state` 的 SQLite 锁/只读竞争；本地 dev 与 Payload CLI 仍使用持久化 D1。
 - **部署脚本防假绿**：app/database 编排仅在 `CLOUDFLARE_ENV` 非空时追加 `--env <name>`，默认环境完全不传 `--env`；OpenNext 只负责生成 bundle，实际发布走已验证可靠的 `wrangler deploy`；发布前后比较 `wrangler versions list --json`，未产生新 Worker version 即非零失败。
-- **Phase 1 下一步**：合并 main → Olivia 用 D1 权限 token 部署（应用新迁移）+ 验权限/唯一约束/seed → 通过后 Cindy 开 Phase 2。需账号侧：D1 权限 token、KV namespace id、确认 CF 自动部署。
+- **本次首页变更**：使用 owner 提供的 SolveField Logo；清除 Payload 模板/Documentation/编辑器外链；管理员入口改为右上角小锁图标（tooltip + aria-label），仅链接内部 `/admin`；真实安全门仍为 Payload 邮箱+强密码，已泄露密码不使用、不入库。
+- **下一步**：Olivia 部署并验收桌面/移动端 Logo、首页内部链接、`/admin` 登录与 `/api/problems` 回归；通过后按优先级进入 Phase 1A Agent 辅助入库。
 
 ### 历史
 - **Phase 0** ✅ 完成（技术探针通过，可行）。

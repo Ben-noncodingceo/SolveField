@@ -7,6 +7,9 @@ const nextConfig = {
       {
         pathname: '/api/media/file/**',
       },
+      {
+        pathname: '/brand/**',
+      },
     ],
   },
   // Packages with Cloudflare Workers (workerd) specific code

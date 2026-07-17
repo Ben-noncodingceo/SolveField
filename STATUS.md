@@ -2,7 +2,7 @@
 
 > 简明进度追踪（共享真相之一）。每阶段更新：当前阶段 / 本次变更 / 门禁 / 下一步。
 
-## 当前阶段：Phase 1 — 数据与权限底座 ✅（代码完成，待 Olivia 生产验收）
+## 当前阶段：Phase 1 ✅ 生产全绿；Logo / 首页收尾批次待视觉验收
 
 ### 已完成
 - **5 张核心 Collection**：`Competitions`、`Problems`、`ProblemRatings`、`ProblemEdits`、`Users`（+ 保留 `Media`/R2）。
@@ -31,7 +31,9 @@
 3. **GitHub→CF 自动部署**：确认 Workers Builds 自动触发（Phase 0 遗留）。
 
 ### 下一步
-合并 main → Olivia 用 D1 token 部署（应用新迁移）+ 按 TEST_MATRIX 验权限/唯一约束/seed → 通过后 Cindy 开 Phase 2（i18n + KaTeX 前台）。
+1. 部署 Logo/首页批次：移除模板外链，右上角小锁进入 `/admin`；Payload 邮箱+强密码仍是唯一后台门禁。
+2. Olivia 做桌面/移动端视觉、内部链接、`/`/`/admin`/`/api/problems` 回归。
+3. 通过后开始高优先 Phase 1A Agent 辅助入库；其后邮箱注册，再进入 Phase 2 最小题库列表/详情 + i18n + KaTeX。
 
 ## 历史
 - **Phase 0** ✅ 技术探针通过（Payload+CF 可行）；生产 500（wrangler 运行时 import）已修，站点上线 https://solvefield.playphysics.net。详见 `docs/ADR-001-cloudflare.md`。
