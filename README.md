@@ -91,6 +91,7 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 
 - **当前阶段**：Phase 1 ✅ 代码完成（数据与权限底座），待 Olivia 生产验收。
 - **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题、Users 目录仅 admin 可见且 user/editor 只读自己）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（本地 `pnpm seed`、生产 `pnpm run seed:remote`，均带结果校验）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
+- **构建期 D1 隔离**：`pnpm build` 与 OpenNext build 设置 `SOLVEFIELD_EPHEMERAL_PROXY=1`，使并行 page-data worker 使用不落盘的 Miniflare bindings，避免共享 `.wrangler/state` 的 SQLite 锁/只读竞争；本地 dev 与 Payload CLI 仍使用持久化 D1。
 - **Phase 1 下一步**：合并 main → Olivia 用 D1 权限 token 部署（应用新迁移）+ 验权限/唯一约束/seed → 通过后 Cindy 开 Phase 2。需账号侧：D1 权限 token、KV namespace id、确认 CF 自动部署。
 
 ### 历史

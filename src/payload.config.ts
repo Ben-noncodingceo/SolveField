@@ -21,6 +21,7 @@ const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(valu
 
 const isCLI = process.argv.some((value) => realpath(value).endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
+const useEphemeralBuildProxy = process.env.SOLVEFIELD_EPHEMERAL_PROXY === '1'
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -88,6 +89,11 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
+        // Next/OpenNext build starts multiple page-data workers. A shared
+        // persistent Miniflare D1 causes SQLITE_BUSY_RECOVERY/readonly races,
+        // while builds do not query D1 at all. Build scripts opt into an
+        // in-memory proxy; dev and Payload CLI keep normal local persistence.
+        persist: useEphemeralBuildProxy ? false : true,
         // Remote bindings only for Payload CLI commands such as migrations.
         // Builds stay local even when a token exists. Production seed deliberately
         // uses native Wrangler D1 SQL instead of this proxy (see ADR-001).

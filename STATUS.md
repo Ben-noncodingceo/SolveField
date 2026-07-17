@@ -13,6 +13,7 @@
 - **迁移**：`src/migrations/20260717_045649_phase1_collections`（含 `(problem_id,user_id)` DB 级唯一索引）。
 - **seed 导入**：本地 `pnpm seed` 使用 Payload importer；生产 `pnpm run seed:remote` 从同一 `content/seed.json` 生成幂等 SQL，经原生 Wrangler D1 写入，再独立 JSON 查询逐 slug 验证。不使用远程会提前 exit 0 的 Payload proxy；Wrangler/解析/计数失败均非零退出。
 - **DB 采用 migration 模式**：`sqliteD1Adapter({ push: false })`。
+- **构建期代理隔离**：Next/OpenNext build 显式 `SOLVEFIELD_EPHEMERAL_PROXY=1` → `getPlatformProxy({ persist:false })`，防止并行 page-data worker 争用同一 Miniflare SQLite；dev/CLI 继续持久化。
 
 ### 门禁结果（本地）
 | 项 | 结果 |
