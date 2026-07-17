@@ -5,7 +5,8 @@ import type { Problem } from './payload-types'
 
 // Idempotent seed importer. Upserts by slug so it can run repeatedly without
 // creating duplicates. Source file content/seed.json is never modified.
-// Run: pnpm seed   (= payload run src/seed.ts)
+// Run locally: pnpm seed
+// Run against production D1: pnpm seed:remote (requires CF token/account env).
 type SeedCompetition = {
   slug: string; nameZh: string; nameEn: string; year: number; level: string
   descriptionZh?: string | null; descriptionEn?: string | null; cover?: string | null
@@ -46,7 +47,9 @@ export const runSeed = async (): Promise<void> => {
   let count = 0
   for (const p of data.problems) {
     const competition = compIdBySlug.get(p.competitionSlug)
-    if (!competition) { payload.logger.warn(`Skip ${p.slug}: unknown competition ${p.competitionSlug}`); continue }
+    if (!competition) {
+      throw new Error(`Seed invalid: ${p.slug} references unknown competition ${p.competitionSlug}`)
+    }
     const doc = {
       slug: p.slug, competition, difficulty: p.difficulty, tags: p.tags as Problem['tags'],
       originalLanguage: p.originalLanguage,
@@ -66,7 +69,29 @@ export const runSeed = async (): Promise<void> => {
     count++
   }
   payload.logger.info(`Seed: ${count} problems upserted`)
+
+  // Never report a false green: prove every source slug exists exactly once.
+  for (const c of data.competitions) {
+    const result = await payload.find({
+      collection: 'competitions', where: { slug: { equals: c.slug } }, limit: 2, depth: 0,
+    })
+    if (result.totalDocs !== 1) {
+      throw new Error(`Seed verification failed: competition ${c.slug} count=${result.totalDocs}, expected=1`)
+    }
+  }
+  for (const p of data.problems) {
+    const result = await payload.find({
+      collection: 'problems', where: { slug: { equals: p.slug } }, limit: 2, depth: 0,
+    })
+    if (result.totalDocs !== 1) {
+      throw new Error(`Seed verification failed: problem ${p.slug} count=${result.totalDocs}, expected=1`)
+    }
+  }
+
+  payload.logger.info(
+    `Seed verified: ${data.competitions.length} competitions + ${data.problems.length} problems`,
+  )
 }
 
-// Allow `payload run src/seed.ts`
+// Standalone entrypoint. An unhandled failure gives the process a non-zero exit.
 await runSeed()

@@ -77,8 +77,9 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 2. 连接 GitHub 仓库到 Cloudflare Workers/Pages，绑定 D1(`D1`)、R2(`R2`)、（后续）KV。
 3. 设置 secret：`PAYLOAD_SECRET`（勿入库、勿发公开频道）。
 4. **数据库迁移（首次上线前必须做，否则 D1 无表、站点起不来）**：部署命令用 `pnpm run deploy`（含 `payload migrate`），并在构建环境注入 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`；或首次先手动跑一次 `pnpm run deploy:database`。详见 ADR 风险 §6。
-5. push `main` → Production；PR/分支 → Preview。
-6. 绑定自定义域名 `solvefield.playphysics.net`。
+5. **生产 seed（首次初始化按需执行）**：在相同 Cloudflare 凭据环境中运行 `pnpm run seed:remote`。该命令绕开已确认会 exit-0/no-op 的 `payload run`，直接执行 TypeScript importer，通过 Wrangler remote binding 写入 D1，并逐 slug 校验 1 个竞赛 + 3 道题；写入或校验失败均非零退出，重复运行幂等。日常部署不会自动重放 seed，避免覆盖管理员后续编辑。
+6. push `main` → Production；PR/分支 → Preview。
+7. 绑定自定义域名 `solvefield.playphysics.net`。
 
 细节与已知限制（sharp 不可用、admin 包体积、D1 beta 等）见 ADR。
 
@@ -89,7 +90,7 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 > 详见 [`STATUS.md`](STATUS.md)。
 
 - **当前阶段**：Phase 1 ✅ 代码完成（数据与权限底座），待 Olivia 生产验收。
-- **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（`pnpm seed`）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
+- **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（本地 `pnpm seed`、生产 `pnpm run seed:remote`，均带结果校验）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
 - **Phase 1 下一步**：合并 main → Olivia 用 D1 权限 token 部署（应用新迁移）+ 验权限/唯一约束/seed → 通过后 Cindy 开 Phase 2。需账号侧：D1 权限 token、KV namespace id、确认 CF 自动部署。
 
 ### 历史

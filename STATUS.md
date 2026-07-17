@@ -11,7 +11,7 @@
 - **标签**：`Problems.tags` 值域从 `content/tags-taxonomy.json` 派生（单一来源，防漂移）。
 - **KV binding**：已在 `wrangler.jsonc` 加 `KV`（本阶段不做业务缓存；namespace id 待建，见下）。
 - **迁移**：`src/migrations/20260717_045649_phase1_collections`（含 `(problem_id,user_id)` DB 级唯一索引）。
-- **seed 导入**：`pnpm seed`（幂等，按 slug upsert；不改 `content/seed.json`）。
+- **seed 导入**：本地 `pnpm seed`；生产 `pnpm run seed:remote`。均直接用 `tsx` 执行 importer（不使用已确认会远程 exit-0/no-op 的 `payload run`），按 slug 幂等 upsert，不改 `content/seed.json`，并逐 slug 验证；失败非零退出。
 - **DB 采用 migration 模式**：`sqliteD1Adapter({ push: false })`。
 
 ### 门禁结果（本地）
@@ -24,7 +24,7 @@
 | `pnpm run check:phase1` | ✅ seed 存在 / role 默认 / **(problem,user) 唯一约束拦截重复** |
 
 ### 待账号侧 / Olivia（不阻断代码，但 Phase 1 生产验收需要）
-1. **D1 权限的 token**：跑新迁移建表需 D1+Workers+R2 Edit 的 token（配进 CF 自动构建，或给 Olivia 手动 `pnpm run deploy:database`）。
+1. **D1 权限的 token**：跑新迁移建表与生产 seed 需 D1+Workers+R2 Edit 的 token（配进 CF 自动构建，或给 Olivia 手动运行 `pnpm run deploy:database` + `pnpm run seed:remote`）。
 2. ✅ **KV namespace**：`solvefield-kv` 已建，id `58d8b249448641bf970b393ceb124fe3` 已填入 `wrangler.jsonc`（Phase 4 才真正用）。
 3. **GitHub→CF 自动部署**：确认 Workers Builds 自动触发（Phase 0 遗留）。
 
