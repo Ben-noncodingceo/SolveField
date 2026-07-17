@@ -7,8 +7,8 @@
   "scripts": {
     "build": "cross-env SOLVEFIELD_EPHEMERAL_PROXY=1 NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
     "deploy": "pnpm run deploy:database && pnpm run deploy:app",
-    "deploy:app": "cross-env SOLVEFIELD_EPHEMERAL_PROXY=1 opennextjs-cloudflare build --env=$CLOUDFLARE_ENV && opennextjs-cloudflare deploy --env=$CLOUDFLARE_ENV",
-    "deploy:database": "cross-env NODE_ENV=production PAYLOAD_SECRET=ignore payload migrate && wrangler d1 execute D1 --command 'PRAGMA optimize' --env=$CLOUDFLARE_ENV --remote",
+    "deploy:app": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/deploy-app.ts",
+    "deploy:database": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/deploy-database.ts",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_SECRET=ignore tsx src/seed.ts",
     "seed:remote": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-remote.ts",
