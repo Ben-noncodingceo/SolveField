@@ -38,14 +38,19 @@ const cloudflareLogger = {
   silent: () => {},
 } as any // Use PayloadLogger type when it's exported
 
-const cloudflare =
-  // Use the OpenNext remote context only in a real Cloudflare build/runtime
-  // (CLOUDFLARE_API_TOKEN present, e.g. GitHub→Cloudflare CI). Otherwise use the
-  // local wrangler platform proxy so `next build`, dev and CLI work offline with
-  // local D1/R2. See docs/ADR-001-cloudflare.md.
-  isCLI || !isProduction || !process.env.CLOUDFLARE_API_TOKEN
-    ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
+// Are we executing inside a deployed Cloudflare Worker (vs Node during
+// build / CLI / local dev)? Cloudflare sets this UA at runtime. This is the ONLY
+// reliable runtime-vs-build discriminator — do NOT key off env vars like
+// CLOUDFLARE_API_TOKEN, which are build-time-only and absent in the Worker at
+// runtime (that leak caused `No such module "wrangler"` 500s). See ADR-001.
+const isWorkerRuntime =
+  typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers'
+
+const cloudflare = isWorkerRuntime
+  ? // Deployed Worker runtime: native OpenNext bindings. Never imports `wrangler`.
+    await getCloudflareContext({ async: true })
+  : // Build / CLI / local dev (Node): local wrangler platform proxy, works offline.
+    await getCloudflareContextFromWrangler()
 
 export default buildConfig({
   admin: {
@@ -78,10 +83,11 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        // Use remote Cloudflare bindings only when credentials are present
-        // (e.g. CI/CD with CLOUDFLARE_API_TOKEN). Otherwise fall back to local
-        // bindings so `next build` / dev work offline. See docs/ADR-001-cloudflare.md.
-        remoteBindings: isProduction && !!process.env.CLOUDFLARE_API_TOKEN,
+        // Remote bindings only for the migrate CLI (`payload migrate` needs the
+        // real remote D1) when a token is present. Builds (local or CI) use local
+        // binding objects — dynamic routes don't query the DB at build time — so
+        // `next build` works offline without credentials. See docs/ADR-001.
+        remoteBindings: isCLI && !!process.env.CLOUDFLARE_API_TOKEN,
       } satisfies GetPlatformProxyOptions),
   )
 }

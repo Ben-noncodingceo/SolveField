@@ -88,5 +88,6 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 
 - **当前阶段**：Phase 0 ✅ 完成（技术探针通过，可行）。
 - **本次变更**：用 Payload 官方 `with-cloudflare-d1` 模板初始化骨架；修复 4 处模板/版本漂移（CSS 类型声明、`generatePayloadViewport`、`storage→plugins`、`build` 脚本）+ 离线可构建改造；`next build` 与 OpenNext Worker 打包全绿；纳入 `TEST_MATRIX.md` 与 `content/` 共享真相；产出 `docs/ADR-001-cloudflare.md`。域名定为 `solvefield.playphysics.net`（子域名，无 basePath）。
-- **已配**：D1 数据库 `solvefield`（id `392ee4ac-87e8-46e4-a25b-283abdbb2e2f`）与 R2 桶 `solvefield` 已由账号侧创建，D1 id 已填入 `wrangler.jsonc`。
-- **下一步**：账号侧完成"连 GitHub + 绑定 D1/R2 + 设 `PAYLOAD_SECRET` + 首次迁移 + 绑域名"→ Olivia 按 `TEST_MATRIX.md` D1–D9 做生产 smoke；通过后进入 Phase 1（5 张 Collection + 权限，字段对齐 `content/seed.schema.json`）。
+- **已配**：D1 数据库 `solvefield`（id `392ee4ac-87e8-46e4-a25b-283abdbb2e2f`）与 R2 桶 `solvefield` 已建，D1 id 已填入 `wrangler.jsonc`；账号侧已连 GitHub + 绑定 + secret + 域名。
+- **修复中（生产 500）**：首次部署后所有服务端路由 500，根因是运行时上下文判据用了构建期变量 `CLOUDFLARE_API_TOKEN`，导致 Worker 运行时误加载 `wrangler` → `No such module "wrangler"`。已改为按 `navigator.userAgent === 'Cloudflare-Workers'` 判运行时（Worker 走原生 binding，绝不加载 wrangler）。详见 ADR 事故记录。
+- **下一步**：合并 main → Olivia 用 token 重部署 + `wrangler tail` 复验 500 消失 + 确认迁移已应用 → 通过后 Olivia 跑 D1–D9/U1–U8，Cindy 再开 Phase 1。
