@@ -12,6 +12,14 @@ export const isEditorOrAdmin: Access = ({ req: { user } }) => {
 }
 export const isLoggedIn: Access = ({ req: { user } }) => Boolean(user)
 
+// User directory is private: admins may list/read all accounts; every other
+// authenticated role (including editor) may read only its own document.
+export const readSelfOrAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (roleOf(user) === 'admin') return true
+  return { id: { equals: user.id } }
+}
+
 // Field-level: only admins may set/change a field (e.g. role).
 export const isAdminFieldAccess: FieldAccess = ({ req: { user } }) => roleOf(user) === 'admin'
 export const isEditorOrAdminFieldAccess: FieldAccess = ({ req: { user } }) => {

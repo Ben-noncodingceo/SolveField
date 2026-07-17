@@ -20,21 +20,7 @@ const dirname = path.dirname(filename)
 const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(value) : undefined)
 
 const isCLI = process.argv.some((value) => realpath(value).endsWith(path.join('payload', 'bin.js')))
-const isSeedScript = process.argv.some((value) => realpath(value).endsWith(path.join('src', 'seed.ts')))
 const isProduction = process.env.NODE_ENV === 'production'
-const remoteBindingsRequested = process.env.SOLVEFIELD_REMOTE_BINDINGS === '1'
-
-if (remoteBindingsRequested && !isSeedScript) {
-  throw new Error('SOLVEFIELD_REMOTE_BINDINGS=1 is restricted to src/seed.ts')
-}
-
-if (remoteBindingsRequested && !process.env.CLOUDFLARE_API_TOKEN) {
-  throw new Error('SOLVEFIELD_REMOTE_BINDINGS=1 requires CLOUDFLARE_API_TOKEN')
-}
-
-const useRemoteBindings =
-  !!process.env.CLOUDFLARE_API_TOKEN &&
-  (isCLI || (remoteBindingsRequested && isSeedScript))
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -102,11 +88,10 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        // Remote bindings only for Payload CLI commands or an explicitly opted-in
-        // standalone script (currently `pnpm seed:remote`). Builds (local or CI)
-        // stay local even when a token exists, so dynamic route generation never
-        // touches production D1. See docs/ADR-001.
-        remoteBindings: useRemoteBindings,
+        // Remote bindings only for Payload CLI commands such as migrations.
+        // Builds stay local even when a token exists. Production seed deliberately
+        // uses native Wrangler D1 SQL instead of this proxy (see ADR-001).
+        remoteBindings: isCLI && !!process.env.CLOUDFLARE_API_TOKEN,
       } satisfies GetPlatformProxyOptions),
   )
 }

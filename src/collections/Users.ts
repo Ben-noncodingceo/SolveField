@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin, isAdminFieldAccess, isLoggedIn } from '../access/roles'
+import { isAdmin, isAdminFieldAccess, readSelfOrAdmin } from '../access/roles'
 
 // 用户（含认证）。角色 user/editor/admin。
 // - 只有 admin 能改别人的账号/角色；用户可读/改自己。
@@ -8,7 +8,7 @@ export const Users: CollectionConfig = {
   admin: { useAsTitle: 'email', defaultColumns: ['email', 'role'] },
   auth: true,
   access: {
-    read: isLoggedIn,
+    read: readSelfOrAdmin,
     create: isAdmin, // 后台建用户仅 admin；公开注册走独立 auth 端点（Phase 4）
     update: ({ req: { user }, id }) => {
       if (!user) return false

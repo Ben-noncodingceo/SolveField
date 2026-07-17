@@ -7,11 +7,11 @@
 ### 已完成
 - **5 张核心 Collection**：`Competitions`、`Problems`、`ProblemRatings`、`ProblemEdits`、`Users`（+ 保留 `Media`/R2）。
 - **字段对齐** `content/seed.schema.json`；补齐：`Problems.totalDislikes`、`source`、`originalLanguage`、三语题干/解析；`ProblemRatings` 的 `(problem,user)` 复合唯一 + `vote(-1/0/1)`/`score(1-5)`；`ProblemEdits` 的 before/after 快照、reviewedBy/At、rejectReason、targetVersion。
-- **权限**：访客只读 `published`；user 可评分/提案但**不能直改 Problems**；editor 审提案/改题；admin 全权。role 字段仅 admin 可改（防提权）。
+- **权限**：访客只读 `published`；user 可评分/提案但**不能直改 Problems**；editor 审提案/改题；admin 全权。role 字段仅 admin 可改（防提权）。Users 目录仅 admin 可读全部，user/editor 只读自己，未登录不可读。
 - **标签**：`Problems.tags` 值域从 `content/tags-taxonomy.json` 派生（单一来源，防漂移）。
 - **KV binding**：已在 `wrangler.jsonc` 加 `KV`（本阶段不做业务缓存；namespace id 待建，见下）。
 - **迁移**：`src/migrations/20260717_045649_phase1_collections`（含 `(problem_id,user_id)` DB 级唯一索引）。
-- **seed 导入**：本地 `pnpm seed`；生产 `pnpm run seed:remote`。均直接用 `tsx` 执行 importer（不使用已确认会远程 exit-0/no-op 的 `payload run`），按 slug 幂等 upsert，不改 `content/seed.json`，并逐 slug 验证；失败非零退出。
+- **seed 导入**：本地 `pnpm seed` 使用 Payload importer；生产 `pnpm run seed:remote` 从同一 `content/seed.json` 生成幂等 SQL，经原生 Wrangler D1 写入，再独立 JSON 查询逐 slug 验证。不使用远程会提前 exit 0 的 Payload proxy；Wrangler/解析/计数失败均非零退出。
 - **DB 采用 migration 模式**：`sqliteD1Adapter({ push: false })`。
 
 ### 门禁结果（本地）
