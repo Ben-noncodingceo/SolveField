@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SolveField seed v1",
+  "description": "seed.json 的结构契约（对齐 Cindy 的 seed v1）。David 在 Phase 1 落 Payload Collection schema 时以此映射。字段名即 Payload 字段名建议值。",
+  "type": "object",
+  "required": ["competitions", "problems"],
+  "properties": {
+    "_meta": { "type": "object", "description": "非入库元信息，导入时忽略。" },
+    "competitions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Competition" }
+    },
+    "problems": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Problem" }
+    }
+  },
+  "definitions": {
+    "Competition": {
+      "type": "object",
+      "required": ["slug", "nameZh", "nameEn", "year", "level"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": { "type": "string", "description": "全局唯一稳定标识，如 ipho-2026。建议与 (标识,year) 联合唯一。" },
+        "nameZh": { "type": "string" },
+        "nameEn": { "type": "string" },
+        "year": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+        "level": { "type": "string", "enum": ["national", "regional", "world"] },
+        "descriptionZh": { "type": ["string", "null"] },
+        "descriptionEn": { "type": ["string", "null"] },
+        "cover": { "type": ["string", "null"], "description": "相对资源路径占位（走 R2），不内嵌 base64。可选。" }
+      }
+    },
+    "Problem": {
+      "type": "object",
+      "required": [
+        "slug", "competitionSlug", "difficulty", "tags", "originalLanguage",
+        "contentOriginal", "contentZh", "contentEn",
+        "answerOriginal", "answerZh", "answerEn",
+        "source", "allowWikiEdit", "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "slug": { "type": "string", "description": "全局唯一，如 ipho-2026-t1。" },
+        "competitionSlug": { "type": "string", "description": "外键 → Competition.slug。" },
+        "difficulty": { "type": "integer", "minimum": 1, "maximum": 5, "description": "见 difficulty-rubric.md。" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "只存 tags-taxonomy.json 中的二级英文 key（多选）。label 不在此重复。"
+        },
+        "originalLanguage": { "type": "string", "description": "题目原始语言 ISO 码，如 en / ru / de。" },
+        "contentOriginal": { "type": "string", "description": "题干原始语言文本（LaTeX 源码，不翻译、不覆盖）。" },
+        "contentZh": { "type": ["string", "null"], "description": "中文题干（LaTeX）。缺译文填 null。" },
+        "contentEn": { "type": ["string", "null"], "description": "英文题干（LaTeX）。原始即英文时可与 contentOriginal 相同。缺则 null。" },
+        "answerOriginal": { "type": ["string", "null"], "description": "原始语言解析（LaTeX）。无独立原始解析时填 null。" },
+        "answerZh": { "type": ["string", "null"], "description": "中文解析（LaTeX）。" },
+        "answerEn": { "type": ["string", "null"], "description": "英文解析（LaTeX）。" },
+        "source": { "type": "string", "description": "出处，如 'IPhO 2026 Theory T1'。" },
+        "officialSolutionUrl": { "type": ["string", "null"], "description": "官方解析链接，可选。" },
+        "allowWikiEdit": { "type": "boolean", "description": "是否允许用户提交 Wiki 修改提案。" },
+        "status": { "type": "string", "enum": ["draft", "pending", "published", "archived"] }
+      }
+    }
+  },
+  "x-payload-mapping-notes": {
+    "Problem.tags": "映射为 Payload relationship→Tags 或 select(hasMany)，值域取 taxonomy 的 key。",
+    "Problem.competitionSlug": "映射为 relationship→Competitions（按 slug 解析为 id）。",
+    "statsFields": "totalLikes/totalDislikes/avgScore/scoreCount 为运行期统计字段，seed 不提供、由系统初始化为 0/null。",
+    "ratingsAndEdits": "ProblemRatings(problem+user 复合唯一, vote∈{-1,0,1}, score∈1..5|null) 与 ProblemEdits(before/afterSnapshot, reviewedBy, reviewedAt, rejectReason, targetVersion) 不在 seed 内，属运行期数据。"
+  }
+}

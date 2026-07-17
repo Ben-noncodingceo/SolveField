@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "seedVersion": 1,
+    "contract": "SolveField seed v1 (Cindy)",
+    "note": "公式为原始 LaTeX 源码（KaTeX 渲染）。JSON 内反斜杠已按规范双写。tags 仅存英文 key，label 见 tags-taxonomy.json。缺真实译文的字段为 null。图片用相对路径占位。",
+    "katexCoverage": {
+      "inline": "所有题",
+      "display": "所有题 answer",
+      "aligned_multiline": [
+        "ipho-2026-t2",
+        "ipho-2026-t3"
+      ],
+      "matrix_bmatrix": [
+        "ipho-2026-t2"
+      ],
+      "integral": [
+        "ipho-2026-t3"
+      ],
+      "vector": [
+        "ipho-2026-t1"
+      ],
+      "cases_equation_system": [
+        "ipho-2026-t1"
+      ]
+    }
+  },
+  "competitions": [
+    {
+      "slug": "ipho-2026",
+      "nameZh": "第 56 届国际物理奥林匹克",
+      "nameEn": "56th International Physics Olympiad",
+      "year": 2026,
+      "level": "world",
+      "descriptionZh": "2026 年国际物理奥林匹克，哥伦比亚·布卡拉曼加。理论卷 3 题、共 30 分、5 小时。",
+      "descriptionEn": "International Physics Olympiad 2026, Bucaramanga, Colombia. Theory: 3 problems, 30 points, 5 hours.",
+      "cover": "competitions/ipho-2026/cover.png"
+    }
+  ],
+  "problems": [
+    {
+      "slug": "ipho-2026-t1",
+      "competitionSlug": "ipho-2026",
+      "difficulty": 4,
+      "tags": [
+        "fluid-mechanics",
+        "gravitation-orbits",
+        "quantum-basics",
+        "energy-momentum",
+        "approximation-perturbation"
+      ],
+      "originalLanguage": "en",
+      "contentOriginal": "This problem consists of three independent parts. \\textbf{(a) Hydrostatic gate.} A cube of side $a$ and density $3\\rho_0$, set at $45^\\circ$, seals a slot of vertical size $a\\sqrt2/2$ and pivots about $O$. Find $a$ so the maximum head difference is $\\Delta h=1.41\\,\\mathrm{m}$. \\textbf{(b) Electron-positron pair.} At separation $100a_0$ the velocities are antiparallel and perpendicular to the line joining them, each with angular momentum $\\mu\\hbar$ about the centre of mass. For $\\mu=4$ find the maximum separation; for $\\mu=15/2$ find the angle between the asymptotic relative velocity and the initial motion. \\textbf{(c) Photodissociation of ozone.} A photon of energy $\\hbar\\omega$ (momentum $p=\\hbar\\omega/c$) is absorbed by a stationary $\\mathrm{O_3}$, producing $\\mathrm{O_2}$ (mass $2m$, at angle $\\theta$) and $\\mathrm{O}$ (mass $m$). Find the minimum $\\omega$ for dissociation at angle $\\theta$.",
+      "contentZh": "本题含三个相互独立的小题。\\textbf{(a) 静水闸门}：边长 $a$、密度 $3\\rho_0$ 的正方体呈 $45^\\circ$ 封住竖直尺寸 $a\\sqrt2/2$ 的槽口并绕 $O$ 转动，求使最大水位差为 $\\Delta h=1.41\\,\\mathrm{m}$ 的 $a$。\\textbf{(b) 正负电子对}：相距 $100a_0$ 时二者速度反平行且垂直连线，各自对质心角动量 $\\mu\\hbar$。$\\mu=4$ 求最大间距；$\\mu=15/2$ 求渐近相对速度与初始运动方向的夹角。\\textbf{(c) 臭氧光解}：能量 $\\hbar\\omega$、动量 $p=\\hbar\\omega/c$ 的光子被静止 $\\mathrm{O_3}$ 吸收，生成 $\\mathrm{O_2}$（质量 $2m$，夹角 $\\theta$）与 $\\mathrm{O}$（质量 $m$）。求在该角度解离所需最小 $\\omega$。",
+      "contentEn": "This problem consists of three independent parts. \\textbf{(a) Hydrostatic gate.} A cube of side $a$ and density $3\\rho_0$, set at $45^\\circ$, seals a slot of vertical size $a\\sqrt2/2$ and pivots about $O$. Find $a$ so the maximum head difference is $\\Delta h=1.41\\,\\mathrm{m}$. \\textbf{(b) Electron-positron pair.} At separation $100a_0$ the velocities are antiparallel and perpendicular to the line joining them, each with angular momentum $\\mu\\hbar$ about the centre of mass. For $\\mu=4$ find the maximum separation; for $\\mu=15/2$ find the angle between the asymptotic relative velocity and the initial motion. \\textbf{(c) Photodissociation of ozone.} A photon of energy $\\hbar\\omega$ (momentum $p=\\hbar\\omega/c$) is absorbed by a stationary $\\mathrm{O_3}$, producing $\\mathrm{O_2}$ (mass $2m$, at angle $\\theta$) and $\\mathrm{O}$ (mass $m$). Find the minimum $\\omega$ for dissociation at angle $\\theta$.",
+      "answerOriginal": null,
+      "answerZh": "(a) 力矩平衡给出 $\\Delta h_{\\max}=2\\sqrt2\\,a$，故 $a=\\dfrac{\\Delta h}{2\\sqrt2}\\approx 0.50\\,\\mathrm{m}$。 (b) $\\mu=4$：$\\varepsilon=\\tfrac{7}{25}$，$r_{\\max}=\\dfrac{1600}{9}a_0\\approx177.8\\,a_0$；$\\mu=15/2$：$\\varepsilon=\\tfrac72$，夹角 $=\\arcsin\\tfrac27\\approx16.6^\\circ$。 (c) 记氧原子动量矢量 $\\vec P=\\vec p_\\gamma-\\vec p_2$，由能量守恒得关于 $p_2$ 的二次方程，判别式非负给出 $$\\hbar\\omega_{\\min}=\\frac{3mc^2}{3-2\\cos^2\\theta}\\left[1-\\sqrt{1-\\frac{2(3-2\\cos^2\\theta)\\,\\Delta U}{3mc^2}}\\right].$$ 取值分支： $$\\begin{cases} \\text{判别式}\\ge 0 & \\Rightarrow\\ \\text{可在该角度出射}\\\\ \\hbar\\omega=\\hbar\\omega_{\\min} & \\Rightarrow\\ \\text{取较小根}\\end{cases}$$ $\\theta=\\pi/6$ 时 $\\hbar\\omega_{\\min}-\\Delta U\\approx 2.03\\times10^{-11}\\,\\mathrm{eV}$。",
+      "answerEn": "(a) Torque balance gives $\\Delta h_{\\max}=2\\sqrt2\\,a$, so $a=\\dfrac{\\Delta h}{2\\sqrt2}\\approx0.50\\,\\mathrm{m}$. (b) For $\\mu=4$: $\\varepsilon=\\tfrac{7}{25}$, $r_{\\max}=\\dfrac{1600}{9}a_0\\approx177.8\\,a_0$; for $\\mu=15/2$: $\\varepsilon=\\tfrac72$, angle $=\\arcsin\\tfrac27\\approx16.6^\\circ$. (c) With $\\vec P=\\vec p_\\gamma-\\vec p_2$, the discriminant condition yields $$\\hbar\\omega_{\\min}=\\frac{3mc^2}{3-2\\cos^2\\theta}\\left[1-\\sqrt{1-\\frac{2(3-2\\cos^2\\theta)\\,\\Delta U}{3mc^2}}\\right],$$ and at $\\theta=\\pi/6$, $\\hbar\\omega_{\\min}-\\Delta U\\approx2.03\\times10^{-11}\\,\\mathrm{eV}$.",
+      "source": "IPhO 2026 Theory T1",
+      "officialSolutionUrl": null,
+      "allowWikiEdit": true,
+      "status": "published"
+    },
+    {
+      "slug": "ipho-2026-t2",
+      "competitionSlug": "ipho-2026",
+      "difficulty": 5,
+      "tags": [
+        "geometric-optics",
+        "photometry-radiation",
+        "approximation-perturbation",
+        "dimensional-analysis"
+      ],
+      "originalLanguage": "en",
+      "contentOriginal": "Parallel light reflects inside a half-cylinder mirror of radius $R$ (surface $x^2+y^2=R^2,\\ y\\ge0$); a ray at $x=R\\sin\\theta$ has incidence angle $\\theta$. (A) Find $x_N$, the largest $|x|$ giving at most $N$ reflections. (B) A fully absorbing container of radius $a$ sits at the paraxial focus $(0,R/2)$; find $\\alpha,\\beta$ in $a=\\alpha\\sin\\theta_{\\max}+\\beta\\sin2\\theta_{\\max}$, the power ratio $P/P_0$, and $a$ for $P=5P_0$ ($R=1\\,\\mathrm{m}$). (C) Find the reflected-ray line $y=m_Ax+b_A$, the caustic intersection $(X_c,Y_c)$, and its cusp scaling.",
+      "contentZh": "平行光在半径 $R$ 的半圆柱镜（面 $x^2+y^2=R^2,\\ y\\ge0$）内反射；$x=R\\sin\\theta$ 处入射角为 $\\theta$。(A) 求至多 $N$ 次反射的离轴最大距离 $x_N$。(B) 半径 $a$ 的全吸收容器在近轴焦点 $(0,R/2)$，求 $a=\\alpha\\sin\\theta_{\\max}+\\beta\\sin2\\theta_{\\max}$ 的 $\\alpha,\\beta$、功率比 $P/P_0$，以及 $P=5P_0$（$R=1\\,\\mathrm{m}$）时的 $a$。(C) 求反射线 $y=m_Ax+b_A$、焦散交点 $(X_c,Y_c)$ 及尖点标度。",
+      "contentEn": "Parallel light reflects inside a half-cylinder mirror of radius $R$ (surface $x^2+y^2=R^2,\\ y\\ge0$); a ray at $x=R\\sin\\theta$ has incidence angle $\\theta$. (A) Find $x_N$, the largest $|x|$ giving at most $N$ reflections. (B) A fully absorbing container of radius $a$ sits at the paraxial focus $(0,R/2)$; find $\\alpha,\\beta$ in $a=\\alpha\\sin\\theta_{\\max}+\\beta\\sin2\\theta_{\\max}$, the power ratio $P/P_0$, and $a$ for $P=5P_0$ ($R=1\\,\\mathrm{m}$). (C) Find the reflected-ray line $y=m_Ax+b_A$, the caustic intersection $(X_c,Y_c)$, and its cusp scaling.",
+      "answerOriginal": null,
+      "answerZh": "(A) $x_N=R\\cos\\dfrac{\\pi}{2N+1}$。 (B) $\\alpha=R,\\ \\beta=-\\dfrac R2$，$\\dfrac{P}{P_0}=\\dfrac{1}{1-\\cos\\theta_{\\max}}$，$P=5P_0$ 时 $a=\\dfrac{3R}{25}=12\\,\\mathrm{cm}$。 (C) 入射方向 $(0,1)$ 对法线反射，可写成矩阵作用 $$\\begin{bmatrix} d_x'\\\\ d_y' \\end{bmatrix}=\\begin{bmatrix} -\\cos2\\theta & -\\sin2\\theta\\\\ -\\sin2\\theta & \\cos2\\theta \\end{bmatrix}\\begin{bmatrix} 0\\\\ 1 \\end{bmatrix}=\\begin{bmatrix} -\\sin2\\theta\\\\ -\\cos2\\theta \\end{bmatrix}.$$ 于是 $$\\begin{aligned} m_A&=\\cot2\\theta, & b_A&=\\frac{R}{2\\cos\\theta},\\\\ X_c&=R\\sin^3\\theta, & Y_c&=\\tfrac{R}{2}\\cos\\theta\\,(2-\\cos2\\theta).\\end{aligned}$$ 小角下 $Y_c=\\dfrac R2+\\dfrac{3R}{4}\\left(\\dfrac{|X_c|}{R}\\right)^{2/3}$，尖点标度 $2/3$。",
+      "answerEn": "(A) $x_N=R\\cos\\dfrac{\\pi}{2N+1}$. (B) $\\alpha=R,\\ \\beta=-\\dfrac R2$, $\\dfrac{P}{P_0}=\\dfrac{1}{1-\\cos\\theta_{\\max}}$, and $a=\\dfrac{3R}{25}=12\\,\\mathrm{cm}$. (C) The reflection acts as a matrix $$\\begin{bmatrix} d_x'\\\\ d_y' \\end{bmatrix}=\\begin{bmatrix} -\\cos2\\theta & -\\sin2\\theta\\\\ -\\sin2\\theta & \\cos2\\theta \\end{bmatrix}\\begin{bmatrix} 0\\\\ 1 \\end{bmatrix},$$ giving $$\\begin{aligned} m_A&=\\cot2\\theta, & b_A&=\\frac{R}{2\\cos\\theta},\\\\ X_c&=R\\sin^3\\theta, & Y_c&=\\tfrac{R}{2}\\cos\\theta\\,(2-\\cos2\\theta),\\end{aligned}$$ with cusp scaling $Y_c-\\tfrac R2\\propto|X_c|^{2/3}$.",
+      "source": "IPhO 2026 Theory T2",
+      "officialSolutionUrl": null,
+      "allowWikiEdit": true,
+      "status": "published"
+    },
+    {
+      "slug": "ipho-2026-t3",
+      "competitionSlug": "ipho-2026",
+      "difficulty": 4,
+      "tags": [
+        "thermodynamics-laws",
+        "magnetic-materials",
+        "statistical-physics",
+        "calculus-ode"
+      ],
+      "originalLanguage": "en",
+      "contentOriginal": "A paramagnetic torus (volume $V$, $n$ moles, constants $K,\\lambda$) obeys $TMV=nKH$, $C_M=n\\lambda/T^2$, $\\mathrm{d}U=C_M\\,\\mathrm{d}T$, with $B=\\mu_0(H+M)$ and work into the system positive. (A) Find $H$, $\\mathrm{d}W_{\\mathrm{emf}}$, and the work on the material $\\mathrm{d}W$. (B) Isothermal heat $Q$ for $H_i\\to H_f$; adiabatic $\\Delta T$. (C) Analyse a paramagnetic Carnot refrigerator (relate $M_1$ to $M_2,M_3,M_4$; cool $1\\,\\mathrm{L}$ helium; cooling time and overall COP).",
+      "contentZh": "顺磁圆环（体积 $V$、$n$ 摩尔、常数 $K,\\lambda$）满足 $TMV=nKH$、$C_M=n\\lambda/T^2$、$\\mathrm{d}U=C_M\\,\\mathrm{d}T$，$B=\\mu_0(H+M)$，功流入为正。(A) 求 $H$、$\\mathrm{d}W_{\\mathrm{emf}}$ 及对材料做的功 $\\mathrm{d}W$。(B) 等温 $H_i\\to H_f$ 的热量 $Q$；绝热 $\\Delta T$。(C) 分析顺磁卡诺制冷机（用 $M_2,M_3,M_4$ 表 $M_1$；冷却 $1\\,\\mathrm{L}$ 液氦；降温时间与总 COP）。",
+      "contentEn": "A paramagnetic torus (volume $V$, $n$ moles, constants $K,\\lambda$) obeys $TMV=nKH$, $C_M=n\\lambda/T^2$, $\\mathrm{d}U=C_M\\,\\mathrm{d}T$, with $B=\\mu_0(H+M)$ and work into the system positive. (A) Find $H$, $\\mathrm{d}W_{\\mathrm{emf}}$, and the work on the material $\\mathrm{d}W$. (B) Isothermal heat $Q$ for $H_i\\to H_f$; adiabatic $\\Delta T$. (C) Analyse a paramagnetic Carnot refrigerator (relate $M_1$ to $M_2,M_3,M_4$; cool $1\\,\\mathrm{L}$ helium; cooling time and overall COP).",
+      "answerOriginal": null,
+      "answerZh": "(A) $H=\\dfrac{NAI}{V}$，$\\mathrm{d}W_{\\mathrm{emf}}=VH\\,\\mathrm{d}B$，$\\mathrm{d}W=\\mu_0VH\\,\\mathrm{d}M$。 (B) 等温 $\\mathrm{d}M=\\dfrac{nK}{TV}\\mathrm{d}H$，故 $$Q=-\\int_{H_i}^{H_f}\\mu_0 VH\\,\\mathrm{d}M=-\\frac{\\mu_0 nK}{T}\\int_{H_i}^{H_f} H\\,\\mathrm{d}H=\\frac{\\mu_0 nK\\,(H_i^2-H_f^2)}{2T}.$$ 绝热不变量 $\\dfrac{\\lambda+\\mu_0KH^2}{T^2}=\\text{const}$，得 $$\\begin{aligned} \\Delta T&=T_i\\!\\left[\\sqrt{\\frac{\\lambda+\\mu_0KH_f^2}{\\lambda+\\mu_0KH_i^2}}-1\\right].\\end{aligned}$$ (C) $M_1=\\sqrt{M_2^2-M_3^2+M_4^2}$；一个循环后液氦 $1.00\\,\\mathrm{K}\\to0.990\\,\\mathrm{K}$；$t=\\dfrac{C_c}{P}\\!\\left[T_h\\ln\\dfrac{T_0}{T}-(T_0-T)\\right]$，$\\mathrm{COP}=\\dfrac{T_0-T}{T_h\\ln(T_0/T)-(T_0-T)}$。",
+      "answerEn": "(A) $H=\\dfrac{NAI}{V}$, $\\mathrm{d}W_{\\mathrm{emf}}=VH\\,\\mathrm{d}B$, $\\mathrm{d}W=\\mu_0VH\\,\\mathrm{d}M$. (B) Isothermally, $$Q=-\\frac{\\mu_0 nK}{T}\\int_{H_i}^{H_f} H\\,\\mathrm{d}H=\\frac{\\mu_0 nK\\,(H_i^2-H_f^2)}{2T},$$ and from the adiabatic invariant $(\\lambda+\\mu_0KH^2)/T^2=\\text{const}$, $$\\begin{aligned}\\Delta T&=T_i\\!\\left[\\sqrt{\\frac{\\lambda+\\mu_0KH_f^2}{\\lambda+\\mu_0KH_i^2}}-1\\right].\\end{aligned}$$ (C) $M_1=\\sqrt{M_2^2-M_3^2+M_4^2}$; helium $1.00\\,\\mathrm{K}\\to0.990\\,\\mathrm{K}$; $t=\\dfrac{C_c}{P}\\!\\left[T_h\\ln\\dfrac{T_0}{T}-(T_0-T)\\right]$, $\\mathrm{COP}=\\dfrac{T_0-T}{T_h\\ln(T_0/T)-(T_0-T)}$.",
+      "source": "IPhO 2026 Theory T3",
+      "officialSolutionUrl": null,
+      "allowWikiEdit": true,
+      "status": "published"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "SolveField Problems.tags 知识点标签体系 v1",
+  "note": "两级结构：category(一级大类) → subtopics(二级考点)。落库建议：Problems.tags 存二级 key 的数组（如 ['gravitation-orbits','energy-momentum']）；category 可由 key 前缀或本表反查。key 全局唯一、稳定，label 可随 i18n 切换。optional=true 的为进阶/低频考点，可在一期先隐藏。",
+  "version": 1,
+  "categories": [
+    {
+      "key": "mechanics",
+      "zh": "力学",
+      "en": "Mechanics",
+      "subtopics": [
+        { "key": "kinematics", "zh": "运动学", "en": "Kinematics" },
+        { "key": "newtonian-dynamics", "zh": "牛顿动力学", "en": "Newtonian Dynamics" },
+        { "key": "energy-momentum", "zh": "功能、动量与守恒", "en": "Work, Energy & Conservation Laws" },
+        { "key": "rigid-body", "zh": "刚体与转动（含进动/陀螺）", "en": "Rigid Body & Rotation" },
+        { "key": "oscillations-waves", "zh": "振动与机械波", "en": "Oscillations & Mechanical Waves" },
+        { "key": "gravitation-orbits", "zh": "引力与天体轨道（开普勒/二体/拉格朗日点）", "en": "Gravitation & Orbits" },
+        { "key": "fluid-mechanics", "zh": "流体力学（静力学/伯努利/表面张力/黏滞）", "en": "Fluid Mechanics" },
+        { "key": "continuum-elasticity", "zh": "连续介质与弹性", "en": "Continuum & Elasticity", "optional": true },
+        { "key": "nonlinear-chaos", "zh": "非线性与混沌", "en": "Nonlinear Dynamics & Chaos", "optional": true }
+      ]
+    },
+    {
+      "key": "electromagnetism",
+      "zh": "电磁学",
+      "en": "Electromagnetism",
+      "subtopics": [
+        { "key": "electrostatics", "zh": "静电场", "en": "Electrostatics" },
+        { "key": "dc-current", "zh": "稳恒电流与电路", "en": "DC Current & Circuits" },
+        { "key": "magnetostatics", "zh": "静磁场", "en": "Magnetostatics" },
+        { "key": "induction", "zh": "电磁感应", "en": "Electromagnetic Induction" },
+        { "key": "ac-transient", "zh": "交流与暂态电路", "en": "AC & Transient Circuits" },
+        { "key": "magnetic-materials", "zh": "磁介质与磁性材料", "en": "Magnetic Materials" },
+        { "key": "maxwell-em-waves", "zh": "麦克斯韦方程与电磁波", "en": "Maxwell Equations & EM Waves" }
+      ]
+    },
+    {
+      "key": "thermal",
+      "zh": "热学",
+      "en": "Thermal Physics",
+      "subtopics": [
+        { "key": "thermodynamics-laws", "zh": "热力学定律与过程", "en": "Laws & Thermodynamic Processes" },
+        { "key": "kinetic-theory", "zh": "气体动理论", "en": "Kinetic Theory of Gases" },
+        { "key": "statistical-physics", "zh": "统计物理（分布/配分函数）", "en": "Statistical Physics" },
+        { "key": "phase-transitions", "zh": "相变与临界现象", "en": "Phase Transitions" },
+        { "key": "heat-transfer", "zh": "热传递（传导/对流/辐射）", "en": "Heat Transfer" }
+      ]
+    },
+    {
+      "key": "optics",
+      "zh": "光学",
+      "en": "Optics",
+      "subtopics": [
+        { "key": "geometric-optics", "zh": "几何光学（成像/反射折射/焦散）", "en": "Geometric Optics" },
+        { "key": "wave-optics", "zh": "波动光学（干涉/衍射/偏振）", "en": "Wave Optics" },
+        { "key": "photometry-radiation", "zh": "光度与辐射", "en": "Photometry & Radiation" },
+        { "key": "modern-optics", "zh": "现代光学（激光/非线性/光纤）", "en": "Modern Optics", "optional": true }
+      ]
+    },
+    {
+      "key": "modern-physics",
+      "zh": "近代物理",
+      "en": "Modern Physics",
+      "subtopics": [
+        { "key": "special-relativity", "zh": "狭义相对论", "en": "Special Relativity" },
+        { "key": "general-relativity", "zh": "广义相对论与引力", "en": "General Relativity", "optional": true },
+        { "key": "quantum-basics", "zh": "量子力学基础（光电/德布罗意/势阱/能级）", "en": "Quantum Basics" },
+        { "key": "atomic-molecular", "zh": "原子与分子物理", "en": "Atomic & Molecular Physics" },
+        { "key": "nuclear-particle", "zh": "核物理与粒子物理", "en": "Nuclear & Particle Physics" },
+        { "key": "condensed-matter", "zh": "凝聚态与固体物理", "en": "Condensed Matter", "optional": true },
+        { "key": "astrophysics-cosmology", "zh": "天体物理与宇宙学", "en": "Astrophysics & Cosmology" }
+      ]
+    },
+    {
+      "key": "methods",
+      "zh": "数学方法与实验",
+      "en": "Methods & Experiment",
+      "note": "跨板块的方法标签，可与上面任一物理板块标签并用（多选）。",
+      "subtopics": [
+        { "key": "dimensional-analysis", "zh": "量纲分析与标度律", "en": "Dimensional Analysis & Scaling" },
+        { "key": "approximation-perturbation", "zh": "近似与微扰展开", "en": "Approximation & Perturbation" },
+        { "key": "calculus-ode", "zh": "微积分与微分方程", "en": "Calculus & ODEs" },
+        { "key": "vectors-frames", "zh": "矢量与坐标/参考系变换", "en": "Vectors & Frames" },
+        { "key": "numerical-estimation", "zh": "数值方法与量级估算", "en": "Numerical & Estimation" },
+        { "key": "data-analysis", "zh": "数据分析与误差（实验向）", "en": "Data Analysis & Uncertainty", "optional": true }
+      ]
+    }
+  ]
+}
