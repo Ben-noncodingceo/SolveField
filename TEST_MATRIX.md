@@ -184,6 +184,7 @@ Owner: @Olivia (测试/运营) · Dev: @David · Plan: @Cindy · v1 (2026-07-17)
 | 部署 | §1 D1-D9 |
 | 安全 | AI/输入防注入（若涉及）、越权、secret 不泄露、上传类型校验 |
 | 移动端 | 首页/题库/详情/切换/公式，主流视口 |
+| 构建/运行时隔离（回归门）| **生产 Worker 路径不得解析/加载 `wrangler`**（dev-only 依赖）；binding 解析走原生 `getCloudflareContext()`，仅本地 CLI/dev/build 才用 wrangler proxy。验证：部署后 `wrangler tail` 无 `No such module "wrangler"`、所有服务端路由非 500。（根因见 2026-07-17 Phase 0 生产 500）|
 | 文档/README | 每次变更后 README 四项（当前阶段/本次变更/运行+部署命令/下一步）已同步；已合并 main 且 main 可构建 |
 
 ---
