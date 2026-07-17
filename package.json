@@ -45,7 +45,10 @@
     "payload": "3.82.1",
     "pdf-lib": "1.17.1",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "react-markdown": "10.1.0",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
