@@ -41,13 +41,12 @@
     //   "bucket_name": "<BUCKET_NAME>",
     // },
   ],
-  // KV binding prepared (Phase 1). No business caching yet — used from Phase 4
-  // (rate-limit / hot cache). Create the namespace and fill the id before deploy:
-  //   wrangler kv namespace create solvefield-kv
+  // KV binding (Phase 1). No business caching yet — used from Phase 4
+  // (rate-limit / hot cache). Project-dedicated namespace `solvefield-kv`.
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "KV_NAMESPACE_ID",
+      "id": "58d8b249448641bf970b393ceb124fe3",
     },
   ],
 

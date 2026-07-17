@@ -25,7 +25,7 @@
 
 ### 待账号侧 / Olivia（不阻断代码，但 Phase 1 生产验收需要）
 1. **D1 权限的 token**：跑新迁移建表需 D1+Workers+R2 Edit 的 token（配进 CF 自动构建，或给 Olivia 手动 `pnpm run deploy:database`）。
-2. **KV namespace**：`wrangler kv namespace create solvefield-kv` → 把 id 填进 `wrangler.jsonc` 的 `KV_NAMESPACE_ID`（Phase 4 才真正用）。
+2. ✅ **KV namespace**：`solvefield-kv` 已建，id `58d8b249448641bf970b393ceb124fe3` 已填入 `wrangler.jsonc`（Phase 4 才真正用）。
 3. **GitHub→CF 自动部署**：确认 Workers Builds 自动触发（Phase 0 遗留）。
 
 ### 下一步
