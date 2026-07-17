@@ -50,6 +50,22 @@ Owner: @Olivia (测试/运营) · Dev: @David · Plan: @Cindy · v1 (2026-07-17)
 
 > 若最终无法走 GitHub 自动部署，则退回 `wrangler`：需 comet 先 `wrangler login` 或提供 `CLOUDFLARE_API_TOKEN`（放 CI secret，不进公开频道）。
 
+### 1b. 正式 URL 约束（部署目标）— 已定：子域名（Plan A）
+账号：Cloudflare（绑 GitHub Ben-noncodingceo）· 域名：**playphysics.net**
+正式地址：**`https://solvefield.playphysics.net`（子域名，根路径部署，无 basePath）** ✅ comet 2026-07-17 确认走 Plan A。
+> 子域名方案：admin/API/静态资源都在根路径下，Next.js/Payload 无需 basePath——坑最少。原子路径(Plan B)的 basePath 验收项作废。
+
+| # | 验收点 | 通过标准 |
+|---|---|---|
+| U1 | 自定义子域名绑定 | CF Pages 绑 `solvefield.playphysics.net`，DNS 解析生效 |
+| U2 | HTTPS/SSL 证书 | 子域名 SSL 有效、自动续期，无证书告警 |
+| U3 | 根路径路由 | 页面/admin/API/静态资源均在根路径（`/`、`/admin`、`/api`），无 basePath 前缀 |
+| U4 | 静态资源 | JS/CSS/图片/字体(KaTeX) 无 404 |
+| U5 | i18n 路由 | zh/en 路由在根下正确（如 `/en/...`）|
+| U6 | 登录/回调 | 认证回调 URL = 子域名根，跳转正确 |
+| U7 | 主域不受影响 | `playphysics.net` 及其它子域/项目不受影响 |
+| U8 | Preview / Production binding 隔离 | 两环境各自 D1/R2/KV，不串数据 |
+
 ---
 
 ## 2. 分阶段验收矩阵（对齐 @Cindy 最终路线 Phase 0–7）
