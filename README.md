@@ -85,7 +85,7 @@ pnpm exec playwright test ingestion.e2e.spec.ts --config=playwright.config.ts --
 1. 在 Cloudflare（GitHub `Ben-noncodingceo` 绑定账号）创建 D1 数据库、R2 桶，把 `wrangler.jsonc` 里的 `database_id` 填上。
 2. 连接 GitHub 仓库到 Cloudflare Workers/Pages，绑定 D1(`D1`)、R2(`R2`)、（后续）KV。
 3. 设置 secret：`PAYLOAD_SECRET`（勿入库、勿发公开频道）。
-4. **数据库迁移（首次上线前必须做，否则 D1 无表、站点起不来）**：部署命令用 `pnpm run deploy`（含 `payload migrate`），并在构建环境注入 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`；或首次先手动跑一次 `pnpm run deploy:database`。Phase 1A 新迁移为 `20260717_074705`，up/down 已在本地 D1 往返验证。详见 ADR 风险 §6。
+4. **数据库迁移（首次上线前必须做，否则 D1 无表、站点起不来）**：部署命令用 `pnpm run deploy`，并在构建环境注入 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`；或首次先手动跑一次 `pnpm run deploy:database`。该命令从已提交的 Payload migration `up()` 静态提取 SQL，经原生 `wrangler d1 execute --remote --file` 顺序应用，并独立校验 tracking row + 表/列/索引哨兵；检测到无 tracking row 的半迁移状态会拒绝继续。Phase 1A 新迁移为 `20260717_074705`。详见 ADR 风险 §6。
 5. **生产 seed（首次初始化按需执行）**：在相同 Cloudflare 凭据环境中运行 `pnpm run seed:remote`。该命令从 `content/seed.json` 生成有序幂等 SQL，使用原生 `wrangler d1 execute --remote --file` 写入，然后以独立 D1 JSON 查询逐 slug 校验 1 个竞赛 + 3 道题；Wrangler、JSON 或计数任一失败均非零退出。它不使用生产中已证实会提前 exit 0 的 Payload remote proxy。日常部署不会自动重放 seed，避免覆盖管理员后续编辑。
 6. push `main` → Production；PR/分支 → Preview。
 7. 绑定自定义域名 `solvefield.playphysics.net`。
