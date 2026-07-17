@@ -1,0 +1,247 @@
+{
+  "schemaVersion": "solvefield.ingest.v1",
+  "importId": "ing_ipho2026_t1_demo",
+  "idempotencyKey": "ingest-v1:f8f63dcdc7e12107294195a861c2ed342fa114c683fb9b85ea8a07e8620ad715",
+  "sourceBundle": {
+    "files": [
+      {
+        "fileId": "src-t1a",
+        "originalFileName": "T1Aproblem.pdf",
+        "mediaType": "application/pdf",
+        "byteSize": 215483,
+        "pageCount": 1,
+        "fileHash": "sha256:7b6d6ff380c527c38398e6b8fe9e23262f863bc4db2a4eb6d83bb31cca1e982c",
+        "r2ObjectKey": null
+      },
+      {
+        "fileId": "src-t1b",
+        "originalFileName": "T1Bproblem.pdf",
+        "mediaType": "application/pdf",
+        "byteSize": 222384,
+        "pageCount": 1,
+        "fileHash": "sha256:fda3ea42a4ce84ba57d1178287f0de69fd1f7f3611ee2acc931baffafb945d54",
+        "r2ObjectKey": null
+      },
+      {
+        "fileId": "src-t1c",
+        "originalFileName": "T1Cproblem.pdf",
+        "mediaType": "application/pdf",
+        "byteSize": 219216,
+        "pageCount": 1,
+        "fileHash": "sha256:23168afd0ae142983f9265813c350f9994c9276249c1f4c78ed4549a3ff19f7c",
+        "r2ObjectKey": null
+      }
+    ],
+    "bundleHash": "sha256:19b011863fdf42c6450fcc00ce5169c86f76a6b7859fef57f863e27aad0efdc0",
+    "sourceUrl": null,
+    "retrievedAt": null,
+    "rightsNote": "Official English theoretical-exam pages supplied for content ingestion; preserve source attribution and original wording."
+  },
+  "competition": {
+    "competitionSlug": "ipho-2026",
+    "nameOriginal": "56th International Physics Olympiad",
+    "nameZh": "第 56 届国际物理奥林匹克",
+    "nameEn": "56th International Physics Olympiad",
+    "year": 2026,
+    "editionLabel": "56th",
+    "level": "world"
+  },
+  "paper": {
+    "paperCode": "theory",
+    "paperTitle": "Theoretical Exam - English (Official)",
+    "section": "Question T1 - Three problems",
+    "originalLanguage": "en"
+  },
+  "item": {
+    "slugCandidate": "ipho-2026-t1",
+    "problemCode": "T1",
+    "problemOrder": 1,
+    "titleOriginal": "Three problems",
+    "originalLanguage": "en",
+    "contentOriginal": "# QUESTION T1 [10 pts]. Three problems\n\nThis question consists of three independent problems.\n\n## T1-A [3.0 pts]. Hydrostatic gate\n\nTwo water reservoirs are separated by a vertical wall MN, as shown in figure 1a. The left reservoir can receive water from a source. It must be ensured that the maximum possible difference between the water levels is $\\Delta h=1.41\\,\\mathrm{m}$. To achieve this, a slot of vertical size $a\\sqrt{2}/2$ is cut in MN and sealed with a solid cubic block of side length $a$. The block has density $3\\rho_0$, with $\\rho_0$ the density of water. The block is fully submerged, fixed to the wall at $O$ and can rotate without friction about the axis perpendicular to the plane of the figure that passes through point $O$.\n\n![Fig. 1a](asset://fig-1a)\n\n**T1-A1 [3.0 pts.]** Calculate the value of $a$ that ensures the maximum permissible difference in water levels is not exceeded.\n\n## T1-B [3.5 pts]. Electron-positron pair\n\nAt a certain instant of time, a positron $e^+$ is located at a distance of $100a_0$ from an electron $e^-$. The particles are moving in such a way that their velocities are antiparallel at that instant, perpendicular to their separation, as shown in figure 1b. It is known that each particle has an angular momentum of magnitude $\\mu\\hbar$ with respect to the system's center of mass, where $\\mu$ is a dimensionless numerical factor. Assume that the only interaction between $e^+$ and $e^-$ is electrostatic (both particles have the same mass $m$ and equal magnitude of the charge but of opposite sign). Furthermore, assume that this system remains isolated and that its dynamics are classical and non-relativistic.\n\nThe Bohr radius $a_0$ is given by $a_0=4\\pi\\epsilon_0\\hbar^2/(me^2)$.\n\n![Fig. 1b](asset://fig-1b)\n\n**T1-B1 [1.0 pts.]** If $\\mu=4$, the system is bound, meaning that the particles move in a closed orbit around the system's center of mass. Find the maximum separation distance between $e^+$ and $e^-$ in terms of $a_0$.\n\n**T1-B2 [2.5 pts.]** If $\\mu=15/2$, the system is unbound, meaning that the particles are no longer in a closed orbit around the system's center of mass. Let $\\vec u_\\infty$ be the velocity of $e^+$ relative to $e^-$ as the separation distance between them tends to infinity. Calculate the angle between $\\vec u_\\infty$ and the initial line of motion of $e^+$. Give your answer in degrees.\n\n*Hint 1:* The eccentricity $\\varepsilon$ of a conic trajectory for the present case is given by\n\n$$\\varepsilon=\\sqrt{1+\\frac{4L^2E}{k^2e^4m}},$$\n\nwhere $E$ and $L$ are the total energy and the magnitude of the total angular momentum, respectively. $k$ is Coulomb's constant $k=1/(4\\pi\\epsilon_0)$.\n\n*Hint 2:* The equation of a conic in polar coordinates is\n\n$$r=\\frac{a}{1-\\varepsilon\\cos\\theta}.$$\n\n## T1-C [3.5 pts]. Photodissociation of ozone\n\nA photon with angular frequency $\\omega$ strikes an ozone molecule $\\mathrm{O_3}$ at rest, dissociating it (breaking it apart) into an oxygen molecule $\\mathrm{O_2}$ and an oxygen atom $\\mathrm{O}$, as shown in figure 1c. The photon is absorbed in this process. Let $U_i$ and $U_f$ be the ground state energies of the ozone and oxygen molecules, respectively. Assume that this system remains isolated and that its dynamics is classical (potential energies do not contribute to mass and the motion of the oxygen atoms are non-relativistic). Use the relation $p=E/c$ for the linear momentum of the photon, where $E$ is its energy.\n\n![Fig. 1c](asset://fig-1c)\n\n**T1-C1 [2.5 pts.]** If the angle that the momentum of the outgoing $\\mathrm{O_2}$ with respect to the incident photon is $\\theta$, determine the minimum angular frequency $\\omega_{\\min}$ required for this dissociation to occur at this angle. Write your answer in terms of $\\hbar$, $c$, $\\theta$, $\\Delta U=U_f-U_i$, and the mass $m$ of an oxygen atom.\n\n**T1-C2 [1.0 pts.]** If $\\theta=\\pi/6$, calculate the value of $\\hbar\\omega_{\\min}-\\Delta U$. Give your answer in electronvolts (eV). Take $\\Delta U=1.10\\,\\mathrm{eV}$ and $m=16.0\\,\\mathrm{amu}$.\n\n*Hint:*\n\n$$(1+x)^r=1+rx+\\frac{r(r-1)}{2!}x^2+\\frac{r(r-1)(r-2)}{3!}x^3+\\cdots.$$",
+    "contentZh": "# T1（10 分）：三个独立问题\n\n## T1-A（3.0 分）：静水闸门\n\n两个水池由竖直墙 MN 隔开，如图 1a。左侧水池可由水源注水，要求两侧水位差最大不超过 $\\Delta h=1.41\\,\\mathrm{m}$。在 MN 上开一竖直尺寸为 $a\\sqrt{2}/2$ 的槽，并用边长 $a$、密度 $3\\rho_0$ 的实心正方体封住；$\\rho_0$ 为水的密度。正方体完全浸没，在 $O$ 点固定，并可绕过 $O$ 且垂直图面的轴无摩擦转动。\n\n![图 1a](asset://fig-1a)\n\n**T1-A1（3.0 分）** 求保证水位差不超过允许最大值的 $a$。\n\n## T1-B（3.5 分）：正电子-电子对\n\n某时刻正电子 $e^+$ 与电子 $e^-$ 相距 $100a_0$，二者速度反平行且均垂直于连线，如图 1b。每个粒子相对系统质心的角动量大小为 $\\mu\\hbar$。仅考虑静电相互作用；两粒子质量均为 $m$、电荷量大小相等且符号相反。系统孤立，运动按经典非相对论处理。玻尔半径 $a_0=4\\pi\\epsilon_0\\hbar^2/(me^2)$。\n\n![图 1b](asset://fig-1b)\n\n**T1-B1（1.0 分）** $\\mu=4$ 时系统束缚，求 $e^+$ 与 $e^-$ 的最大间距，以 $a_0$ 表示。\n\n**T1-B2（2.5 分）** $\\mu=15/2$ 时系统非束缚。设两粒子间距趋于无穷时，$e^+$ 相对 $e^-$ 的速度为 $\\vec u_\\infty$，求 $\\vec u_\\infty$ 与 $e^+$ 初始运动直线之间的夹角，以度数表示。\n\n提示：$\\varepsilon=\\sqrt{1+4L^2E/(k^2e^4m)}$，其中 $E$、$L$ 分别为总能量和总角动量大小，$k=1/(4\\pi\\epsilon_0)$；圆锥曲线极坐标方程为 $r=a/(1-\\varepsilon\\cos\\theta)$。\n\n## T1-C（3.5 分）：臭氧光解\n\n角频率为 $\\omega$ 的光子击中静止臭氧分子 $\\mathrm{O_3}$，并被吸收，使其解离为氧分子 $\\mathrm{O_2}$ 与氧原子 $\\mathrm{O}$，如图 1c。$U_i$ 和 $U_f$ 分别为臭氧分子与氧分子的基态能量。系统孤立，势能不计入质量，氧原子的运动按非相对论处理；光子动量满足 $p=E/c$。\n\n![图 1c](asset://fig-1c)\n\n**T1-C1（2.5 分）** 若出射 $\\mathrm{O_2}$ 的动量与入射光子方向夹角为 $\\theta$，求发生该角度解离所需的最小角频率 $\\omega_{\\min}$，用 $\\hbar,c,\\theta,\\Delta U=U_f-U_i$ 和氧原子质量 $m$ 表示。\n\n**T1-C2（1.0 分）** 取 $\\theta=\\pi/6$、$\\Delta U=1.10\\,\\mathrm{eV}$、$m=16.0\\,\\mathrm{amu}$，求 $\\hbar\\omega_{\\min}-\\Delta U$（单位 eV）。\n\n提示：$(1+x)^r=1+rx+r(r-1)x^2/2!+r(r-1)(r-2)x^3/3!+\\cdots$。",
+    "contentEn": "# QUESTION T1 [10 pts]. Three problems\n\nThis question consists of three independent problems.\n\n## T1-A [3.0 pts]. Hydrostatic gate\n\nTwo water reservoirs are separated by a vertical wall MN, as shown in figure 1a. The left reservoir can receive water from a source. It must be ensured that the maximum possible difference between the water levels is $\\Delta h=1.41\\,\\mathrm{m}$. To achieve this, a slot of vertical size $a\\sqrt{2}/2$ is cut in MN and sealed with a solid cubic block of side length $a$. The block has density $3\\rho_0$, with $\\rho_0$ the density of water. The block is fully submerged, fixed to the wall at $O$ and can rotate without friction about the axis perpendicular to the plane of the figure that passes through point $O$.\n\n![Fig. 1a](asset://fig-1a)\n\n**T1-A1 [3.0 pts.]** Calculate the value of $a$ that ensures the maximum permissible difference in water levels is not exceeded.\n\n## T1-B [3.5 pts]. Electron-positron pair\n\nAt a certain instant of time, a positron $e^+$ is located at a distance of $100a_0$ from an electron $e^-$. The particles are moving in such a way that their velocities are antiparallel at that instant, perpendicular to their separation, as shown in figure 1b. It is known that each particle has an angular momentum of magnitude $\\mu\\hbar$ with respect to the system's center of mass, where $\\mu$ is a dimensionless numerical factor. Assume that the only interaction between $e^+$ and $e^-$ is electrostatic (both particles have the same mass $m$ and equal magnitude of the charge but of opposite sign). Furthermore, assume that this system remains isolated and that its dynamics are classical and non-relativistic.\n\nThe Bohr radius $a_0$ is given by $a_0=4\\pi\\epsilon_0\\hbar^2/(me^2)$.\n\n![Fig. 1b](asset://fig-1b)\n\n**T1-B1 [1.0 pts.]** If $\\mu=4$, the system is bound, meaning that the particles move in a closed orbit around the system's center of mass. Find the maximum separation distance between $e^+$ and $e^-$ in terms of $a_0$.\n\n**T1-B2 [2.5 pts.]** If $\\mu=15/2$, the system is unbound, meaning that the particles are no longer in a closed orbit around the system's center of mass. Let $\\vec u_\\infty$ be the velocity of $e^+$ relative to $e^-$ as the separation distance between them tends to infinity. Calculate the angle between $\\vec u_\\infty$ and the initial line of motion of $e^+$. Give your answer in degrees.\n\n*Hint 1:* The eccentricity $\\varepsilon$ of a conic trajectory for the present case is given by\n\n$$\\varepsilon=\\sqrt{1+\\frac{4L^2E}{k^2e^4m}},$$\n\nwhere $E$ and $L$ are the total energy and the magnitude of the total angular momentum, respectively. $k$ is Coulomb's constant $k=1/(4\\pi\\epsilon_0)$.\n\n*Hint 2:* The equation of a conic in polar coordinates is\n\n$$r=\\frac{a}{1-\\varepsilon\\cos\\theta}.$$\n\n## T1-C [3.5 pts]. Photodissociation of ozone\n\nA photon with angular frequency $\\omega$ strikes an ozone molecule $\\mathrm{O_3}$ at rest, dissociating it (breaking it apart) into an oxygen molecule $\\mathrm{O_2}$ and an oxygen atom $\\mathrm{O}$, as shown in figure 1c. The photon is absorbed in this process. Let $U_i$ and $U_f$ be the ground state energies of the ozone and oxygen molecules, respectively. Assume that this system remains isolated and that its dynamics is classical (potential energies do not contribute to mass and the motion of the oxygen atoms are non-relativistic). Use the relation $p=E/c$ for the linear momentum of the photon, where $E$ is its energy.\n\n![Fig. 1c](asset://fig-1c)\n\n**T1-C1 [2.5 pts.]** If the angle that the momentum of the outgoing $\\mathrm{O_2}$ with respect to the incident photon is $\\theta$, determine the minimum angular frequency $\\omega_{\\min}$ required for this dissociation to occur at this angle. Write your answer in terms of $\\hbar$, $c$, $\\theta$, $\\Delta U=U_f-U_i$, and the mass $m$ of an oxygen atom.\n\n**T1-C2 [1.0 pts.]** If $\\theta=\\pi/6$, calculate the value of $\\hbar\\omega_{\\min}-\\Delta U$. Give your answer in electronvolts (eV). Take $\\Delta U=1.10\\,\\mathrm{eV}$ and $m=16.0\\,\\mathrm{amu}$.\n\n*Hint:*\n\n$$(1+x)^r=1+rx+\\frac{r(r-1)}{2!}x^2+\\frac{r(r-1)(r-2)}{3!}x^3+\\cdots.$$",
+    "answerOriginal": null,
+    "answerZh": null,
+    "answerEn": null,
+    "images": [
+      {
+        "assetKey": "fig-1a",
+        "role": "problem-figure",
+        "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" },
+        "sourceRegion": { "unit": "normalized", "origin": "top-left", "x": 0.086, "y": 0.299, "width": 0.383, "height": 0.306 },
+        "placementMarker": "asset://fig-1a",
+        "altOriginal": "Two reservoirs separated by wall MN, with a tilted cubic hydrostatic gate pivoted at O.",
+        "altZh": "墙 MN 分隔的两个水池及绕 O 点转动的倾斜立方体闸门示意图",
+        "altEn": "Two reservoirs separated by wall MN, with a tilted cubic hydrostatic gate pivoted at O.",
+        "captionOriginal": "Fig. 1a.",
+        "r2ObjectKey": null,
+        "contentHash": null,
+        "confidence": 0.88,
+        "needsReview": true
+      },
+      {
+        "assetKey": "fig-1b",
+        "role": "problem-figure",
+        "sourcePage": { "fileId": "src-t1b", "pageIndex": 1, "printedPageLabel": "5" },
+        "sourceRegion": { "unit": "normalized", "origin": "top-left", "x": 0.085, "y": 0.205, "width": 0.198, "height": 0.211 },
+        "placementMarker": "asset://fig-1b",
+        "altOriginal": "Electron and positron separated by 100 a_0 with antiparallel transverse velocities.",
+        "altZh": "相距 $100a_0$ 且具有反平行横向速度的电子与正电子示意图",
+        "altEn": "Electron and positron separated by 100 a_0 with antiparallel transverse velocities.",
+        "captionOriginal": "Fig. 1b.",
+        "r2ObjectKey": null,
+        "contentHash": null,
+        "confidence": 0.88,
+        "needsReview": true
+      },
+      {
+        "assetKey": "fig-1c",
+        "role": "problem-figure",
+        "sourcePage": { "fileId": "src-t1c", "pageIndex": 1, "printedPageLabel": "6" },
+        "sourceRegion": { "unit": "normalized", "origin": "top-left", "x": 0.088, "y": 0.239, "width": 0.301, "height": 0.176 },
+        "placementMarker": "asset://fig-1c",
+        "altOriginal": "Photon absorption by ozone followed by dissociation into an oxygen molecule and an oxygen atom.",
+        "altZh": "光子被臭氧吸收并解离为氧分子和氧原子的动量方向示意图",
+        "altEn": "Photon absorption by ozone followed by dissociation into an oxygen molecule and an oxygen atom.",
+        "captionOriginal": "Fig. 1c.",
+        "r2ObjectKey": null,
+        "contentHash": null,
+        "confidence": 0.88,
+        "needsReview": true
+      }
+    ],
+    "difficulty": 4,
+    "difficultyBasis": {
+      "rubricVersion": "solvefield-difficulty-v1",
+      "modellingSteps": "extended",
+      "methodThreshold": "nontrivial",
+      "calculationLoad": "heavy",
+      "anchor": "IPhO 2026 T1-B is the published level-4 anchor; the combined T1 also spans hydrostatics and photodissociation kinematics.",
+      "reason": "Three independent models require torque balance with a pressure field, Coulomb two-body conics, and energy-momentum threshold analysis; the highest subproblem reaches level 4."
+    },
+    "tags": [
+      "fluid-mechanics",
+      "gravitation-orbits",
+      "quantum-basics",
+      "energy-momentum",
+      "approximation-perturbation"
+    ],
+    "tagRecommendations": [
+      { "key": "fluid-mechanics", "reason": "T1-A uses hydrostatic pressure and torque on a submerged gate.", "confidence": 0.98, "needsReview": true },
+      { "key": "gravitation-orbits", "reason": "T1-B uses the conic-orbit mathematics of an inverse-square central force; taxonomy v1 has no separate central-force tag.", "confidence": 0.83, "needsReview": true },
+      { "key": "quantum-basics", "reason": "T1-B uses the Bohr radius and angular momentum in units of $\\hbar$, although the dynamics are classical.", "confidence": 0.82, "needsReview": true },
+      { "key": "energy-momentum", "reason": "T1-B and T1-C require conservation of energy, angular momentum, and linear momentum.", "confidence": 0.97, "needsReview": true },
+      { "key": "approximation-perturbation", "reason": "T1-C2 explicitly supplies a binomial expansion for a small relativistic recoil correction.", "confidence": 0.94, "needsReview": true }
+    ],
+    "sourcePages": [
+      { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" },
+      { "fileId": "src-t1b", "pageIndex": 1, "printedPageLabel": "5" },
+      { "fileId": "src-t1c", "pageIndex": 1, "printedPageLabel": "6" }
+    ],
+    "contentHash": "sha256:49c17a44874f9d5964b754346ba913d4e8b5fcee4d6a552850252324ad80982f",
+    "allowWikiEdit": true
+  },
+  "fieldAssessments": {
+    "/competition/competitionSlug": {
+      "confidence": 0.99,
+      "needsReview": false,
+      "method": "derived",
+      "reason": "Stable slug derived from the visible competition abbreviation and year.",
+      "evidence": [{ "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "IPhO 2026" }]
+    },
+    "/competition/year": {
+      "confidence": 0.99,
+      "needsReview": false,
+      "method": "visual",
+      "reason": "Year is printed in the page footer and event logo.",
+      "evidence": [{ "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "IPhO 2026" }]
+    },
+    "/competition/editionLabel": {
+      "confidence": 0.99,
+      "needsReview": false,
+      "method": "visual",
+      "reason": "The event logo contains the ordinal edition.",
+      "evidence": [{ "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "56th" }]
+    },
+    "/paper/paperCode": {
+      "confidence": 0.99,
+      "needsReview": false,
+      "method": "metadata",
+      "reason": "Header identifies the theoretical examination.",
+      "evidence": [{ "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "Theoretical Exam -- English (Official)" }]
+    },
+    "/item/problemCode": {
+      "confidence": 0.99,
+      "needsReview": false,
+      "method": "text-layer",
+      "reason": "Question code and points are explicit in the heading.",
+      "evidence": [{ "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "QUESTION T1 [10 pts]. Three problems" }]
+    },
+    "/item/contentOriginal": {
+      "confidence": 0.96,
+      "needsReview": true,
+      "method": "text-layer",
+      "reason": "Text layer was reconciled with rendered pages; formulas, superscripts, Greek letters and line ordering still require human visual confirmation.",
+      "evidence": [
+        { "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "T1-A [3.0 pts]. Hydrostatic gate" },
+        { "sourcePage": { "fileId": "src-t1b", "pageIndex": 1, "printedPageLabel": "5" }, "quote": "T1-B [3.5 pts]. Electron-positron pair" },
+        { "sourcePage": { "fileId": "src-t1c", "pageIndex": 1, "printedPageLabel": "6" }, "quote": "T1-C [3.5 pts]. Photodissociation of ozone" }
+      ]
+    },
+    "/item/images": {
+      "confidence": 0.88,
+      "needsReview": true,
+      "method": "visual",
+      "reason": "All three figures are mapped, but crop boundaries and alt text must be confirmed before upload.",
+      "evidence": [
+        { "sourcePage": { "fileId": "src-t1a", "pageIndex": 1, "printedPageLabel": "4" }, "quote": "Fig. 1a." },
+        { "sourcePage": { "fileId": "src-t1b", "pageIndex": 1, "printedPageLabel": "5" }, "quote": "Fig. 1b." },
+        { "sourcePage": { "fileId": "src-t1c", "pageIndex": 1, "printedPageLabel": "6" }, "quote": "Fig. 1c." }
+      ]
+    },
+    "/item/difficulty": {
+      "confidence": 0.86,
+      "needsReview": true,
+      "method": "derived",
+      "reason": "Level 4 follows difficulty-rubric.md and its existing IPhO 2026 T1-B anchor; difficulty is always a human-confirmed recommendation.",
+      "evidence": []
+    },
+    "/item/tags": {
+      "confidence": 0.89,
+      "needsReview": true,
+      "method": "derived",
+      "reason": "All keys exist in tags-taxonomy.json; central-force and mixed classical/quantum classification require editorial judgment.",
+      "evidence": []
+    }
+  },
+  "validation": {
+    "schemaValid": true,
+    "taxonomyValid": true,
+    "katex": {
+      "checked": true,
+      "formulaCount": 158,
+      "errors": []
+    },
+    "imageMapping": {
+      "expectedCount": 3,
+      "mappedCount": 3,
+      "allPlacementMarkersResolved": true
+    },
+    "overallConfidence": 0.88,
+    "needsReview": true,
+    "issues": [
+      { "code": "IMAGE_CROP_REVIEW", "severity": "warning", "path": "/item/images", "message": "Confirm crop boxes, derived image hashes, R2 keys and alt text." },
+      { "code": "SUBJECTIVE_METADATA_REVIEW", "severity": "warning", "path": "/item/difficulty", "message": "A physics editor must confirm the recommended difficulty and tags." },
+      { "code": "MISSING_ANSWERS", "severity": "info", "path": "/item/answerOriginal", "message": "The supplied source bundle contains problem statements only; all answer fields remain null." },
+      { "code": "TRANSLATION_REVIEW", "severity": "warning", "path": "/item/contentZh", "message": "Chinese translation is derived content and must be checked against the official English source." }
+    ]
+  },
+  "workflow": {
+    "createAs": "draft",
+    "publishAllowed": false,
+    "humanApprovalRequired": true,
+    "reviewState": "needs-review",
+    "revisionOf": null
+  }
+}

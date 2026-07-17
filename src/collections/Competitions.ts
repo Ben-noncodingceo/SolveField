@@ -14,9 +14,11 @@ export const Competitions: CollectionConfig = {
   fields: [
     { name: 'slug', type: 'text', required: true, unique: true, index: true,
       admin: { description: '全局唯一稳定标识，如 ipho-2026' } },
+    { name: 'nameOriginal', type: 'text' },
     { name: 'nameZh', type: 'text', required: true },
     { name: 'nameEn', type: 'text', required: true },
     { name: 'year', type: 'number', required: true, index: true, min: 1900, max: 2100 },
+    { name: 'editionLabel', type: 'text' },
     { name: 'level', type: 'select', required: true, index: true, options: [
       { label: '国家级 National', value: 'national' },
       { label: '区域级 Regional', value: 'regional' },

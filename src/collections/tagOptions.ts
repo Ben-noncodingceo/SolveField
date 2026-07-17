@@ -1,4 +1,4 @@
-import taxonomy from '../../content/tags-taxonomy.json'
+import taxonomy from '../../content/tags-taxonomy.json' with { type: 'json' }
 
 // Derive Problems.tags select options from Ted's single-source taxonomy
 // (content/tags-taxonomy.json). Value = stable二级 key; label = "zh / en".

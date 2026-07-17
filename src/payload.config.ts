@@ -14,12 +14,17 @@ import { Competitions } from './collections/Competitions'
 import { Problems } from './collections/Problems'
 import { ProblemRatings } from './collections/ProblemRatings'
 import { ProblemEdits } from './collections/ProblemEdits'
+import { IngestionTokens } from './collections/IngestionTokens'
+import { IngestionJobs } from './collections/IngestionJobs'
+import { IngestionItems } from './collections/IngestionItems'
+import { IngestionAssets } from './collections/IngestionAssets'
+import { ingestionEndpoints } from './ingestion/endpoints'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(value) : undefined)
 
-const isCLI = process.argv.some((value) => realpath(value).endsWith(path.join('payload', 'bin.js')))
+const isCLI = process.argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')) ?? false)
 const isProduction = process.env.NODE_ENV === 'production'
 const useEphemeralBuildProxy = process.env.SOLVEFIELD_EPHEMERAL_PROXY === '1'
 
@@ -64,7 +69,19 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Competitions, Problems, ProblemRatings, ProblemEdits],
+  collections: [
+    Users,
+    Media,
+    Competitions,
+    Problems,
+    ProblemRatings,
+    ProblemEdits,
+    IngestionTokens,
+    IngestionJobs,
+    IngestionItems,
+    IngestionAssets,
+  ],
+  endpoints: ingestionEndpoints(cloudflare.env.R2),
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

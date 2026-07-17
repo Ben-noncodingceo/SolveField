@@ -1,0 +1,399 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://solvefield.playphysics.net/schemas/ingest-v1.schema.json",
+  "title": "SolveField Agent-assisted problem ingestion v1",
+  "description": "PDF-derived content contract. The API may create or update an ingestion draft only; it must never publish a Problem directly.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "importId",
+    "idempotencyKey",
+    "sourceBundle",
+    "competition",
+    "paper",
+    "item",
+    "fieldAssessments",
+    "validation",
+    "workflow"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "solvefield.ingest.v1" },
+    "importId": {
+      "type": "string",
+      "pattern": "^ing_[a-z0-9][a-z0-9_-]{7,63}$",
+      "description": "Client-generated stable identifier for one logical ingestion draft."
+    },
+    "idempotencyKey": {
+      "type": "string",
+      "pattern": "^ingest-v1:[a-f0-9]{64}$"
+    },
+    "sourceBundle": { "$ref": "#/definitions/SourceBundle" },
+    "competition": { "$ref": "#/definitions/CompetitionIdentity" },
+    "paper": { "$ref": "#/definitions/PaperIdentity" },
+    "item": { "$ref": "#/definitions/IngestItem" },
+    "fieldAssessments": {
+      "type": "object",
+      "description": "Per-field extraction confidence keyed by RFC 6901 JSON Pointer.",
+      "additionalProperties": { "$ref": "#/definitions/FieldAssessment" },
+      "required": [
+        "/competition/competitionSlug",
+        "/competition/year",
+        "/competition/editionLabel",
+        "/paper/paperCode",
+        "/item/problemCode",
+        "/item/contentOriginal",
+        "/item/images",
+        "/item/difficulty",
+        "/item/tags"
+      ],
+      "propertyNames": { "pattern": "^/" }
+    },
+    "validation": { "$ref": "#/definitions/Validation" },
+    "workflow": { "$ref": "#/definitions/Workflow" }
+  },
+  "definitions": {
+    "Sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "Confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "SourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileId",
+        "originalFileName",
+        "mediaType",
+        "byteSize",
+        "pageCount",
+        "fileHash",
+        "r2ObjectKey"
+      ],
+      "properties": {
+        "fileId": { "type": "string", "pattern": "^src-[a-z0-9-]+$" },
+        "originalFileName": { "type": "string", "minLength": 1 },
+        "mediaType": { "const": "application/pdf" },
+        "byteSize": { "type": "integer", "minimum": 1 },
+        "pageCount": { "type": "integer", "minimum": 1 },
+        "fileHash": { "$ref": "#/definitions/Sha256" },
+        "r2ObjectKey": {
+          "type": ["string", "null"],
+          "description": "Null before the restricted API uploads or resolves the source file."
+        }
+      }
+    },
+    "SourceBundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "bundleHash", "sourceUrl", "retrievedAt", "rightsNote"],
+      "properties": {
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/SourceFile" }
+        },
+        "bundleHash": { "$ref": "#/definitions/Sha256" },
+        "sourceUrl": { "type": ["string", "null"], "format": "uri" },
+        "retrievedAt": { "type": ["string", "null"], "format": "date-time" },
+        "rightsNote": { "type": "string", "minLength": 1 }
+      }
+    },
+    "CompetitionIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "competitionSlug",
+        "nameOriginal",
+        "nameZh",
+        "nameEn",
+        "year",
+        "editionLabel",
+        "level"
+      ],
+      "properties": {
+        "competitionSlug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "nameOriginal": { "type": "string", "minLength": 1 },
+        "nameZh": { "type": ["string", "null"] },
+        "nameEn": { "type": ["string", "null"] },
+        "year": { "type": ["integer", "null"], "minimum": 1900, "maximum": 2100 },
+        "editionLabel": { "type": ["string", "null"] },
+        "level": { "type": "string", "enum": ["national", "regional", "world"] }
+      },
+      "anyOf": [
+        { "properties": { "year": { "type": "integer" } } },
+        { "properties": { "editionLabel": { "type": "string", "minLength": 1 } } }
+      ]
+    },
+    "PaperIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paperCode", "paperTitle", "section", "originalLanguage"],
+      "properties": {
+        "paperCode": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+        },
+        "paperTitle": { "type": "string", "minLength": 1 },
+        "section": { "type": ["string", "null"] },
+        "originalLanguage": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Z]{2})?$"
+        }
+      }
+    },
+    "SourcePageRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fileId", "pageIndex", "printedPageLabel"],
+      "properties": {
+        "fileId": { "type": "string" },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "One-based page index inside this uploaded PDF file."
+        },
+        "printedPageLabel": {
+          "type": ["string", "null"],
+          "description": "Page label printed in the original complete paper, if visible."
+        }
+      }
+    },
+    "BoundingBox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "origin", "x", "y", "width", "height"],
+      "properties": {
+        "unit": { "const": "normalized" },
+        "origin": { "const": "top-left" },
+        "x": { "type": "number", "minimum": 0, "maximum": 1 },
+        "y": { "type": "number", "minimum": 0, "maximum": 1 },
+        "width": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "height": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+      }
+    },
+    "ImageAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetKey",
+        "role",
+        "sourcePage",
+        "sourceRegion",
+        "placementMarker",
+        "altOriginal",
+        "altZh",
+        "altEn",
+        "captionOriginal",
+        "r2ObjectKey",
+        "contentHash",
+        "confidence",
+        "needsReview"
+      ],
+      "properties": {
+        "assetKey": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
+        "role": { "type": "string", "enum": ["problem-figure", "data-table", "decorative"] },
+        "sourcePage": { "$ref": "#/definitions/SourcePageRef" },
+        "sourceRegion": { "$ref": "#/definitions/BoundingBox" },
+        "placementMarker": {
+          "type": "string",
+          "pattern": "^asset://[a-z0-9][a-z0-9-]{1,63}$"
+        },
+        "altOriginal": { "type": "string", "minLength": 1 },
+        "altZh": { "type": ["string", "null"] },
+        "altEn": { "type": ["string", "null"] },
+        "captionOriginal": { "type": ["string", "null"] },
+        "r2ObjectKey": { "type": ["string", "null"] },
+        "contentHash": {
+          "anyOf": [
+            { "$ref": "#/definitions/Sha256" },
+            { "type": "null" }
+          ]
+        },
+        "confidence": { "$ref": "#/definitions/Confidence" },
+        "needsReview": { "type": "boolean" }
+      }
+    },
+    "TagRecommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "reason", "confidence", "needsReview"],
+      "properties": {
+        "key": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "reason": { "type": "string", "minLength": 1 },
+        "confidence": { "$ref": "#/definitions/Confidence" },
+        "needsReview": { "type": "boolean" }
+      }
+    },
+    "DifficultyBasis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rubricVersion", "modellingSteps", "methodThreshold", "calculationLoad", "anchor", "reason"],
+      "properties": {
+        "rubricVersion": { "const": "solvefield-difficulty-v1" },
+        "modellingSteps": { "type": "string", "enum": ["single", "multi", "extended"] },
+        "methodThreshold": { "type": "string", "enum": ["direct", "standard", "nontrivial", "multiple-nontrivial"] },
+        "calculationLoad": { "type": "string", "enum": ["light", "moderate", "heavy"] },
+        "anchor": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "IngestItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slugCandidate",
+        "problemCode",
+        "problemOrder",
+        "titleOriginal",
+        "originalLanguage",
+        "contentOriginal",
+        "contentZh",
+        "contentEn",
+        "answerOriginal",
+        "answerZh",
+        "answerEn",
+        "images",
+        "difficulty",
+        "difficultyBasis",
+        "tags",
+        "tagRecommendations",
+        "sourcePages",
+        "contentHash",
+        "allowWikiEdit"
+      ],
+      "properties": {
+        "slugCandidate": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "problemCode": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "problemOrder": { "type": "integer", "minimum": 1 },
+        "titleOriginal": { "type": ["string", "null"] },
+        "originalLanguage": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Z]{2})?$"
+        },
+        "contentOriginal": { "type": "string", "minLength": 1 },
+        "contentZh": { "type": ["string", "null"] },
+        "contentEn": { "type": ["string", "null"] },
+        "answerOriginal": { "type": ["string", "null"] },
+        "answerZh": { "type": ["string", "null"] },
+        "answerEn": { "type": ["string", "null"] },
+        "images": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ImageAsset" }
+        },
+        "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "difficultyBasis": { "$ref": "#/definitions/DifficultyBasis" },
+        "tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+        },
+        "tagRecommendations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TagRecommendation" }
+        },
+        "sourcePages": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/SourcePageRef" }
+        },
+        "contentHash": { "$ref": "#/definitions/Sha256" },
+        "allowWikiEdit": { "type": "boolean" }
+      }
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePage", "quote"],
+      "properties": {
+        "sourcePage": {
+          "anyOf": [
+            { "$ref": "#/definitions/SourcePageRef" },
+            { "type": "null" }
+          ]
+        },
+        "quote": { "type": ["string", "null"], "maxLength": 240 }
+      }
+    },
+    "FieldAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence", "needsReview", "method", "reason", "evidence"],
+      "properties": {
+        "confidence": { "$ref": "#/definitions/Confidence" },
+        "needsReview": { "type": "boolean" },
+        "method": { "type": "string", "enum": ["metadata", "text-layer", "ocr", "visual", "derived", "translation", "human"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Evidence" }
+        }
+      }
+    },
+    "Issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "path", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+        "severity": { "type": "string", "enum": ["info", "warning", "error"] },
+        "path": { "type": "string", "pattern": "^/" },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    },
+    "Validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaValid", "taxonomyValid", "katex", "imageMapping", "overallConfidence", "needsReview", "issues"],
+      "properties": {
+        "schemaValid": { "type": "boolean" },
+        "taxonomyValid": { "type": "boolean" },
+        "katex": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checked", "formulaCount", "errors"],
+          "properties": {
+            "checked": { "type": "boolean" },
+            "formulaCount": { "type": "integer", "minimum": 0 },
+            "errors": { "type": "array", "items": { "$ref": "#/definitions/Issue" } }
+          }
+        },
+        "imageMapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["expectedCount", "mappedCount", "allPlacementMarkersResolved"],
+          "properties": {
+            "expectedCount": { "type": "integer", "minimum": 0 },
+            "mappedCount": { "type": "integer", "minimum": 0 },
+            "allPlacementMarkersResolved": { "type": "boolean" }
+          }
+        },
+        "overallConfidence": { "$ref": "#/definitions/Confidence" },
+        "needsReview": { "type": "boolean" },
+        "issues": { "type": "array", "items": { "$ref": "#/definitions/Issue" } }
+      }
+    },
+    "Workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["createAs", "publishAllowed", "humanApprovalRequired", "reviewState", "revisionOf"],
+      "properties": {
+        "createAs": { "const": "draft" },
+        "publishAllowed": { "const": false },
+        "humanApprovalRequired": { "const": true },
+        "reviewState": { "type": "string", "enum": ["needs-review", "reviewed", "rejected"] },
+        "revisionOf": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

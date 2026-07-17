@@ -73,6 +73,10 @@ export interface Config {
     problems: Problem;
     'problem-ratings': ProblemRating;
     'problem-edits': ProblemEdit;
+    'ingestion-tokens': IngestionToken;
+    'ingestion-jobs': IngestionJob;
+    'ingestion-items': IngestionItem;
+    'ingestion-assets': IngestionAsset;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +90,10 @@ export interface Config {
     problems: ProblemsSelect<false> | ProblemsSelect<true>;
     'problem-ratings': ProblemRatingsSelect<false> | ProblemRatingsSelect<true>;
     'problem-edits': ProblemEditsSelect<false> | ProblemEditsSelect<true>;
+    'ingestion-tokens': IngestionTokensSelect<false> | IngestionTokensSelect<true>;
+    'ingestion-jobs': IngestionJobsSelect<false> | IngestionJobsSelect<true>;
+    'ingestion-items': IngestionItemsSelect<false> | IngestionItemsSelect<true>;
+    'ingestion-assets': IngestionAssetsSelect<false> | IngestionAssetsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -178,9 +186,11 @@ export interface Competition {
    * 全局唯一稳定标识，如 ipho-2026
    */
   slug: string;
+  nameOriginal?: string | null;
   nameZh: string;
   nameEn: string;
   year: number;
+  editionLabel?: string | null;
   level: 'national' | 'regional' | 'world';
   descriptionZh?: string | null;
   descriptionEn?: string | null;
@@ -202,6 +212,14 @@ export interface Problem {
    */
   slug: string;
   competition: number | Competition;
+  /**
+   * Stable paper code from ingestion, e.g. theory
+   */
+  paperCode?: string | null;
+  /**
+   * Problem number within the paper, e.g. T1
+   */
+  problemCode?: string | null;
   /**
    * 难度 1–5，见 content/difficulty-rubric.md
    */
@@ -275,6 +293,22 @@ export interface Problem {
    */
   source: string;
   /**
+   * Ingestion provenance page references
+   */
+  sourcePages?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Approved ingestion draft provenance
+   */
+  ingestionItem?: (number | null) | IngestionItem;
+  /**
    * 官方解析链接，可选
    */
   officialSolutionUrl?: string | null;
@@ -287,6 +321,152 @@ export interface Problem {
   totalDislikes?: number | null;
   avgScore?: number | null;
   scoreCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-items".
+ */
+export interface IngestionItem {
+  id: number;
+  job: number | IngestionJob;
+  identityKey: string;
+  contentHash: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  fieldAssessments:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  validation:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  reviewState: 'needs-review' | 'reviewed' | 'rejected';
+  revisionOf?: (number | null) | IngestionItem;
+  createdProblem?: (number | null) | Problem;
+  humanDiff?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  reviewedBy?: (number | null) | User;
+  reviewedAt?: string | null;
+  auditTrail:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-jobs".
+ */
+export interface IngestionJob {
+  id: number;
+  importId: string;
+  idempotencyKey: string;
+  actorToken: number | IngestionToken;
+  status: 'needs-review' | 'reviewed' | 'rejected';
+  competitionSlug: string;
+  paperCode: string;
+  problemCode: string;
+  contentHash: string;
+  sourceBundle:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  rawInput:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  normalizedInput:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  validation:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  revisionOf?: (number | null) | IngestionJob;
+  createdProblem?: (number | null) | Problem;
+  auditTrail:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  rejectReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-tokens".
+ */
+export interface IngestionToken {
+  id: number;
+  name: string;
+  /**
+   * SHA-256 hex digest only; never paste the raw token here.
+   */
+  tokenHash: string;
+  scopes: ('ingestion:create' | 'ingestion:update' | 'ingestion:read-own')[];
+  disabled: boolean;
+  expiresAt?: string | null;
+  lastUsedAt?: string | null;
+  rotatedFrom?: (number | null) | IngestionToken;
   updatedAt: string;
   createdAt: string;
 }
@@ -370,6 +550,33 @@ export interface ProblemEdit {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-assets".
+ */
+export interface IngestionAsset {
+  id: number;
+  item: number | IngestionItem;
+  assetKey: string;
+  metadata:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  r2ObjectKey?: string | null;
+  contentHash?: string | null;
+  mediaType?: string | null;
+  originalFileName?: string | null;
+  byteSize?: number | null;
+  status: 'unreviewed' | 'approved' | 'rejected';
+  createdMedia?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -415,6 +622,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'problem-edits';
         value: number | ProblemEdit;
+      } | null)
+    | ({
+        relationTo: 'ingestion-tokens';
+        value: number | IngestionToken;
+      } | null)
+    | ({
+        relationTo: 'ingestion-jobs';
+        value: number | IngestionJob;
+      } | null)
+    | ({
+        relationTo: 'ingestion-items';
+        value: number | IngestionItem;
+      } | null)
+    | ({
+        relationTo: 'ingestion-assets';
+        value: number | IngestionAsset;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -503,9 +726,11 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface CompetitionsSelect<T extends boolean = true> {
   slug?: T;
+  nameOriginal?: T;
   nameZh?: T;
   nameEn?: T;
   year?: T;
+  editionLabel?: T;
   level?: T;
   descriptionZh?: T;
   descriptionEn?: T;
@@ -520,6 +745,8 @@ export interface CompetitionsSelect<T extends boolean = true> {
 export interface ProblemsSelect<T extends boolean = true> {
   slug?: T;
   competition?: T;
+  paperCode?: T;
+  problemCode?: T;
   difficulty?: T;
   tags?: T;
   originalLanguage?: T;
@@ -530,6 +757,8 @@ export interface ProblemsSelect<T extends boolean = true> {
   answerZh?: T;
   answerEn?: T;
   source?: T;
+  sourcePages?: T;
+  ingestionItem?: T;
   officialSolutionUrl?: T;
   allowWikiEdit?: T;
   status?: T;
@@ -578,6 +807,84 @@ export interface ProblemEditsSelect<T extends boolean = true> {
   reviewedAt?: T;
   rejectReason?: T;
   targetVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-tokens_select".
+ */
+export interface IngestionTokensSelect<T extends boolean = true> {
+  name?: T;
+  tokenHash?: T;
+  scopes?: T;
+  disabled?: T;
+  expiresAt?: T;
+  lastUsedAt?: T;
+  rotatedFrom?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-jobs_select".
+ */
+export interface IngestionJobsSelect<T extends boolean = true> {
+  importId?: T;
+  idempotencyKey?: T;
+  actorToken?: T;
+  status?: T;
+  competitionSlug?: T;
+  paperCode?: T;
+  problemCode?: T;
+  contentHash?: T;
+  sourceBundle?: T;
+  rawInput?: T;
+  normalizedInput?: T;
+  validation?: T;
+  revisionOf?: T;
+  createdProblem?: T;
+  auditTrail?: T;
+  rejectReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-items_select".
+ */
+export interface IngestionItemsSelect<T extends boolean = true> {
+  job?: T;
+  identityKey?: T;
+  contentHash?: T;
+  data?: T;
+  fieldAssessments?: T;
+  validation?: T;
+  reviewState?: T;
+  revisionOf?: T;
+  createdProblem?: T;
+  humanDiff?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  auditTrail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingestion-assets_select".
+ */
+export interface IngestionAssetsSelect<T extends boolean = true> {
+  item?: T;
+  assetKey?: T;
+  metadata?: T;
+  r2ObjectKey?: T;
+  contentHash?: T;
+  mediaType?: T;
+  originalFileName?: T;
+  byteSize?: T;
+  status?: T;
+  createdMedia?: T;
   updatedAt?: T;
   createdAt?: T;
 }
