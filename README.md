@@ -76,8 +76,9 @@ pnpm test                           # vitest（集成）+ playwright（e2e）
 1. 在 Cloudflare（GitHub `Ben-noncodingceo` 绑定账号）创建 D1 数据库、R2 桶，把 `wrangler.jsonc` 里的 `database_id` 填上。
 2. 连接 GitHub 仓库到 Cloudflare Workers/Pages，绑定 D1(`D1`)、R2(`R2`)、（后续）KV。
 3. 设置 secret：`PAYLOAD_SECRET`（勿入库、勿发公开频道）。
-4. push `main` → Production；PR/分支 → Preview。
-5. 绑定自定义域名 `solvefield.playphysics.net`。
+4. **数据库迁移（首次上线前必须做，否则 D1 无表、站点起不来）**：部署命令用 `pnpm run deploy`（含 `payload migrate`），并在构建环境注入 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`；或首次先手动跑一次 `pnpm run deploy:database`。详见 ADR 风险 §6。
+5. push `main` → Production；PR/分支 → Preview。
+6. 绑定自定义域名 `solvefield.playphysics.net`。
 
 细节与已知限制（sharp 不可用、admin 包体积、D1 beta 等）见 ADR。
 
