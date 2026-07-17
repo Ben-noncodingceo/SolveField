@@ -93,6 +93,11 @@ Owner: @Olivia (测试/运营) · Dev: @David · Plan: @Cindy · v1 (2026-07-17)
 | 用户不能直接改 Problems | 无入口/被拒 |
 | D1 migration 可从**空库重建** | 重建后结构一致 |
 | seed 灌入成功 | IPhO seed 入库 |
+| ProblemRatings `(problem,user)` 复合唯一 | DB 级约束拦截重复评分 |
+| 审计/点踩字段 | totalDislikes/source/originalLanguage/三语/edit before-after 快照等齐全 |
+
+**本地复现命令（每次 Phase 1 交付先跑）**：`pnpm install` → `npx tsc --noEmit` → `pnpm build` → `npx payload migrate`（本地 D1）→ `pnpm seed`（幂等）→ `pnpm run check:phase1`（seed 存在 / role 持久化 / (problem,user) 唯一约束拦截）。
+**生产前置**：D1+Workers+R2 token（跑远程迁移）；KV namespace 真实 id 填入 `wrangler.jsonc`（占位 `KV_NAMESPACE_ID` 会导致部署失败——binding 未完成即阻断，不占位假通过）。
 
 ### Phase 2｜内容垂直切片：中英双语 + KaTeX
 | 验收点 | 判定 |
