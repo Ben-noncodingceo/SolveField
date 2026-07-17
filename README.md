@@ -98,13 +98,14 @@ pnpm exec playwright test ingestion.e2e.spec.ts --config=playwright.config.ts --
 
 > 详见 [`STATUS.md`](STATUS.md)。
 
-- **当前阶段**：Phase 1 ✅ 生产验收全绿；Phase 1A 代码与本地 E2E ✅，待 Cloudflare 迁移/部署与 Olivia 验收。
+- **当前阶段**：Phase 1 ✅ 生产验收全绿；Phase 1A 代码与本地 E2E ✅，待 Cloudflare 迁移/部署与 Olivia 验收；Phase 2 首个纵切（只读题目前端，task #12）代码 + 本地自测 ✅，待 Olivia 部署验收。
+- **Phase 2·task #12 本次变更（Doug）**：新增只读题目前端——`/problems` 分页列表（仅 published，标题/竞赛/年份/难度/标签）与 `/problems/[slug]` 详情（题干+解析，Markdown + KaTeX SSR 渲染）；`?lang=zh|en` 语言切换，缺译优雅回退 `originalLanguage` 并显示提示；新增全站唯一 KaTeX 配置模块 `src/lib/katex.ts`（macros 为 authoring 契约与 ingest 实测集的并集，`throwOnError:false`，后续 ingest 校验与后台预览切至同一模块）；新增依赖 react-markdown/remark-math/rehype-katex（KaTeX 保持 0.16.22 不动）；块级公式窄屏横向滚动；双保险访问控制（显式 `status=published` 过滤 + `overrideAccess:false` 匿名访问控制），草稿/待审/归档对访客不可见（列表不出现、详情 404）。纯新增前端路由/组件，无 schema/迁移改动。本地 tsc/next build/OpenNext worker build 三绿，功能自测（列表/详情/404/回退/KaTeX 0 错误/草稿不可见）通过。
 - **Phase 1A 本次变更**：新增隔离的 `IngestionJobs` / `IngestionItems` / `IngestionAssets` 与 hash-only `IngestionTokens`；`POST /api/ingestion/jobs` 服务端重算 Draft-07 schema、PDF/hash/JCS 幂等、taxonomy、页码/bbox/marker/KaTeX；error 返回 422 且不落草稿，warning 仅落 `needs-review`；实现按冻结顺序的幂等/版本/疑似重复判定；service token 只能 create/update/read-own；管理员会话独占 `/approve`，在 D1 事务中写 Competition/Media/Problem 和完整审计。契约与用法见 [`docs/ingestion-v1/api.md`](docs/ingestion-v1/api.md)。
 - **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题、Users 目录仅 admin 可见且 user/editor 只读自己）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（本地 `pnpm seed`、生产 `pnpm run seed:remote`，均带结果校验）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
 - **构建期 D1 隔离**：`pnpm build` 与 OpenNext build 设置 `SOLVEFIELD_EPHEMERAL_PROXY=1`，使并行 page-data worker 使用不落盘的 Miniflare bindings，避免共享 `.wrangler/state` 的 SQLite 锁/只读竞争；本地 dev 与 Payload CLI 仍使用持久化 D1。
 - **部署脚本防假绿**：app/database 编排仅在 `CLOUDFLARE_ENV` 非空时追加 `--env <name>`，默认环境完全不传 `--env`；OpenNext 只负责生成 bundle，实际发布走已验证可靠的 `wrangler deploy`；发布前后比较 `wrangler versions list --json`，未产生新 Worker version 即非零失败。
 - **本次首页变更**：使用 owner 提供的 SolveField Logo；清除 Payload 模板/Documentation/编辑器外链；管理员入口改为右上角小锁图标（tooltip + aria-label），仅链接内部 `/admin`；真实安全门仍为 Payload 邮箱+强密码，已泄露密码不使用、不入库。
-- **下一步**：Olivia 在 Preview/生产应用 `20260717_074705` 迁移，按 Ted 清单验证 422/幂等/越权/三图待审/管理员发布与公开 API 隔离；通过后 Phase 1A 关门，进入 Phase 1.1/Phase 2。
+- **下一步**：Olivia 在 Preview/生产应用 `20260717_074705` 迁移，按 Ted 清单验证 422/幂等/越权/三图待审/管理员发布与公开 API 隔离；通过后 Phase 1A 关门，进入 Phase 1.1/Phase 2。task #12：Olivia 部署本分支产物并按 `TEST_MATRIX.md` #12 验收（列表/详情渲染、i18n 回退、KaTeX 无错、匿名可读、回归 `/` `/admin` 200）；David 将 `src/ingestion/validation.ts` 的 KaTeX 配置切换到 `src/lib/katex.ts` 同一模块。
 
 ### 历史
 - **Phase 0** ✅ 完成（技术探针通过，可行）。

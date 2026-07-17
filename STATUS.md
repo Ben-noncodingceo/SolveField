@@ -2,7 +2,17 @@
 
 > 简明进度追踪（共享真相之一）。每阶段更新：当前阶段 / 本次变更 / 门禁 / 下一步。
 
-## 当前阶段：Phase 1 ✅；Phase 1A 代码 + 本地 E2E ✅，待 Preview/生产验收
+## 当前阶段：Phase 1 ✅；Phase 1A 代码 + 本地 E2E ✅，待 Preview/生产验收；Phase 2 task #12 只读题目前端代码 + 本地自测 ✅，待部署验收
+
+### Phase 2 · task #12 只读题目前端（Doug）
+- **`/problems` 列表页**：分页（20/页）展示仅 `published` 题目：标题（source）、竞赛/年份、难度（星级）、知识点标签（展示名取自 `content/tags-taxonomy.json`，按语言 zh/en）。
+- **`/problems/[slug]` 详情页**：题干 + 解析（有则显示），Markdown + LaTeX 经 react-markdown + remark-math + rehype-katex **SSR 渲染**（客户端不闪烁）；块级公式外层 `overflow-x:auto`（契约 §5，窄屏横向滚动）。
+- **i18n**：`?lang=zh|en` 切换（链接保留分页等参数）；所选语言缺译时优雅回退 `originalLanguage` 原文并显示黄色提示条，绝不留空白，也不静默混语言。
+- **KaTeX 单一配置源**：新增 `src/lib/katex.ts`（`throwOnError:false`、`errorColor`、`strict:'warn'`、`trust:false`、macros 为 authoring 契约 ∪ ingest 实测集：`\dd \ee \ii \vv \vect \unit`）；渲染时传 macros 副本防跨请求状态泄漏。**待 David 把 `src/ingestion/validation.ts` 切到此模块**，实现"预览/详情/ingest 三处同配置"。
+- **访问控制双保险**：显式 `where status=published` + `overrideAccess:false`（匿名走 Payload 访问控制）；本地实测：draft 题列表不出现、详情 404；未知 slug 404。
+- **依赖**：+ react-markdown 10.1.0 / remark-math 6.0.0 / rehype-katex 7.0.1；**katex 保持 main 锁定的 0.16.22**（Ted 已实测 158 处公式 0 错误）。
+- **边界**：纯新增前端路由/组件（`src/app/(frontend)/problems/**`、`src/components/MarkdownLatex.tsx`、`src/lib/{katex,problemI18n}.ts`），无 Payload schema/迁移/wrangler 改动。
+- **门禁（本地）**：strict tsc ✅ / next build ✅（新路由均动态渲染）/ OpenNext worker build ✅；功能自测：列表 3 题、详情 KaTeX 0 `katex-error`、zh/en 回退提示正确、草稿不可见。
 
 ### 已完成
 - **Phase 1A 隔离暂存**：`IngestionJobs` / `IngestionItems` / `IngestionAssets`，审核前 `createdProblem=null`，未审资源仅使用私有 `ingestion/` R2 key。
