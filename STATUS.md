@@ -31,6 +31,18 @@
 - **职责范围**：本 PR 只限“文本宏最小集”，**未覆盖**结构命令（`\section`/`\begin{itemize}`/…）、盒子（`\begin{problembox}`/…）、`\SI{…}{…}`（siunitx）、TikZ 图片。这些另开 task。
 - **不动地基**：未碰 Payload schema/迁移/wrangler.jsonc，不破坏分工边界。
 
+### Phase 2 · task #16 LaTeX 宏扩展 + 结构命令 + T3 v4 corpus guard（Doug）
+- **范围**（task #15 遗留 + IPhO T3 真实语料驱动，纯前端纵切，方案B）：把 `remarkLatexTextMacros.ts` 从"AST text 节点插件"重构为"markdown 解析**之前**的源字符串一次性转写器"（`transformLatexInMarkdown`），在 `MarkdownLatex.tsx` 里先于 react-markdown 跑。remark 插件保留为 AST 层兜底（邻接 text 合并 + 防御性再跑一次文本宏）。
+- **新增能力**：
+  1. **LaTeX 数学定界符规范化**：`\[…\]` → `$$…$$`、`\(…\)` → `$…$`，让 remark-math 能识别（否则 `\[…\]` 泄漏成字面 `[ … ]`，内部 `\rm`/`\dd` 跟着漏）。否定回顾 `(?<!\\)` 保证不误伤 `\\[0.5em]`（换行+行距）。
+  2. **块级结构命令**：`\begin{itemize}/\item` → `- …`；`\begin{enumerate}/\item` → `1. …`（含**嵌套列表**深度计数配对 + 4 空格缩进）；`\begin{center}` → 居中 div；`\begin{quote}` → `> …`。未知环境（`problembox` 等）原样保留交 Ted 录入端剥离。
+  3. **`\SI{a}{b}`（siunitx）数学拦截**：转 `\mathrm{a\,b}` 防 KaTeX 报红；**修正过度转义 bug**——早期把单位里的 `^{-3}` 转义成可见字面 `m^\{-3\}`，现直接透传（`findMatchingBrace` 已保证花括号平衡）。
+  4. **`\rm`/`\bfseries` 声明式**：带花括号形式（`\rm{X}`）已支持；数学模式内的 `\rm`（如 `\rho_{\rm He}`）交 KaTeX 正常渲染。
+- **架构关键修复**：块级环境转写**跑在切分 math 段之前**——否则跨公式的 `\begin{itemize}…$…$…\end{itemize}` 会被 `$…$` 切碎、begin/end 无法配对导致整块列表漏转。
+- **测试**：`tests/int/latex-text-macros.int.spec.ts` 扩到 56 用例（40 单元 + 16 corpus guard），全绿。**v4 corpus guard**：抽 `docs/ipho-2026-t3-content.tex` 3 个 `problembox` 真实内容跑完整渲染，守 12 个原始 token（文本宏 8 + `\begin/\end{itemize}/{enumerate}` 4）0 泄漏。corpus guard 改为**先剥离 KaTeX 不可见的 `<annotation>`**再扫描——数学模式内合法的 `\rm` 会回显进 x-tex annotation，不算"泄漏给用户"。
+- **门禁（本地）**：strict tsc ✅ / eslint ✅ / v1+v2+v3+v4 corpus（56 + 404）全绿 ✅ / next build ⏳ / OpenNext worker build ⏳。（workerd runtime smoke 仍受本地 D1 无迁移的环境块，需 Olivia 部署环境验证。）
+- **不动地基**：只改 `src/lib/remarkLatexTextMacros.ts` + `src/components/MarkdownLatex.tsx` + 测试；`docs/ipho-2026-t3-content.tex` 为新增 fixture。未碰 Payload schema/迁移/wrangler。
+
 ### 已完成
 - **Phase 1A 隔离暂存**：`IngestionJobs` / `IngestionItems` / `IngestionAssets`，审核前 `createdProblem=null`，未审资源仅使用私有 `ingestion/` R2 key。
 - **受限凭证**：`IngestionTokens` 只存 SHA-256 hash，支持 scope/过期/禁用/轮换；Agent 只有 ingestion create/update/read-own，publish/approve/用户管理均 403。
