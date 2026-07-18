@@ -38,7 +38,7 @@ const countPDFPages = async (bytes: Uint8Array) => {
   }
 }
 
-const formulaeFromMarkdown = (markdown: string) => {
+export const formulaeFromMarkdown = (markdown: string) => {
   const formulae: string[] = []
   const matcher = /\$\$([\s\S]*?)\$\$|(?<!\\)\$(?!\$)((?:\\.|[^$\\])+)\$/g
   for (const match of markdown.matchAll(matcher)) formulae.push((match[1] ?? match[2]).trim())
