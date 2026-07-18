@@ -2,7 +2,7 @@
 
 > 简明进度追踪（共享真相之一）。每阶段更新：当前阶段 / 本次变更 / 门禁 / 下一步。
 
-## 当前阶段：Phase 1 ✅；Phase 1A 代码 + 本地 E2E ✅，待 Preview/生产验收；Phase 2 task #12 只读题目前端代码 + 本地自测 ✅，待部署验收
+## 当前阶段：Phase 1 ✅；Phase 1A 代码 + 本地 E2E ✅，待 Preview/生产验收；Phase 2 task #12 只读题目前端代码 + 本地自测 ✅，已上线生产；task #15 LaTeX 文本宏守卫代码 + 本地门禁 ✅，待部署验收
 
 ### Phase 2 · task #12 只读题目前端（Doug）
 - **`/problems` 列表页**：分页（20/页）展示仅 `published` 题目：标题（source）、竞赛/年份、难度（星级）、知识点标签（展示名取自 `content/tags-taxonomy.json`，按语言 zh/en）。
@@ -13,6 +13,23 @@
 - **依赖**：+ react-markdown 10.1.0 / remark-math 6.0.0 / rehype-katex 7.0.1；**katex 保持 main 锁定的 0.16.22**（Ted 已实测 158 处公式 0 错误）。
 - **边界**：纯新增前端路由/组件（`src/app/(frontend)/problems/**`、`src/components/MarkdownLatex.tsx`、`src/lib/{katex,problemI18n}.ts`），无 Payload schema/迁移/wrangler 改动。
 - **门禁（本地）**：strict tsc ✅ / next build ✅（新路由均动态渲染）/ OpenNext worker build ✅；功能自测：列表 3 题、详情 KaTeX 0 `katex-error`、zh/en 回退提示正确、草稿不可见。
+
+### Phase 2 · task #15 文本流 LaTeX 文本宏守卫（Doug）
+- **症状**：题干/解析文本流中 `\textbf{(a) 小标题}` 这类 LaTeX **文本**格式宏被原样输出（KaTeX 数学模式不处理文本宏，remark-math 只识别 `$...$`/`$$...$$` 为数学；文本部分走 Markdown 流，被当普通字符）。
+- **修复**：新增 `src/lib/remarkLatexTextMacros.ts` 约 175 行 remark 插件，在 `MarkdownLatex` 渲染链最前面（先于 `remark-math`）跑转换。`MarkdownLatex.tsx` 调整 plugin 顺序：先本插件再 remark-math。宏清单（初始集，按 IPhO T3 频率）：
+  - `\textbf{X}` → `**X**`  · `\textit{X}` → `*X*`  · `\emph{X}` → `*X*`  · `\bfseries{X}` → `**X**`（粗体的“字体声明”写法）
+  - `\textrm{X}` / `\textsf{X}` / `\rm{X}` → `X`（制除字体切换宏）
+  - `\texttt{X}` → `` `X` ``
+- **边界**：
+  - 化括号平衡扫描（递归平衡），不识别的部分保留原文不挂整页
+  - remark-math 已在插件之前把 `$...$`/`$$...$$` 切成 inlineMath/math 节点，本插件只走 text 节点路径，**不会误伤数学内容**
+  - 邻接 text 节点合并，防“\textbf{”/“X”/“}”被 mdast 切分到多节点丢匹配
+  - 防御性安全上限（>10000 次迭代直接中断保留原文，防恶意输入）
+- **测试**：`tests/int/latex-text-macros.int.spec.ts` 35 个用例（19 单元 + 16 corpus guard），全绿。v3 corpus guard 守“seed + example 完整渲染后 HTML 中 0 个 `\textbf`/`\textit`/`\emph`/`\textrm`/`\textsf`/`\texttt`/`\rm`/`\bfseries` 字面”。
+- **门禁**：strict tsc ✅ / next build ✅ / OpenNext worker build ✅ / v1+v2+v3 KaTeX corpus 三套 404 测试 ✅。
+- **环境 block**：workerd runtime smoke 本地 D1 未 apply migrations 未能跑完整端到端，记为环境块，需由 Olivia 在部署环境验证。
+- **职责范围**：本 PR 只限“文本宏最小集”，**未覆盖**结构命令（`\section`/`\begin{itemize}`/…）、盒子（`\begin{problembox}`/…）、`\SI{…}{…}`（siunitx）、TikZ 图片。这些另开 task。
+- **不动地基**：未碰 Payload schema/迁移/wrangler.jsonc，不破坏分工边界。
 
 ### 已完成
 - **Phase 1A 隔离暂存**：`IngestionJobs` / `IngestionItems` / `IngestionAssets`，审核前 `createdProblem=null`，未审资源仅使用私有 `ingestion/` R2 key。
