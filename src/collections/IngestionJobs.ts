@@ -7,6 +7,13 @@ export const IngestionJobs: CollectionConfig = {
     useAsTitle: 'importId',
     defaultColumns: ['importId', 'status', 'competitionSlug', 'paperCode', 'problemCode', 'updatedAt'],
     group: 'Ingestion',
+    components: {
+      views: {
+        list: {
+          actions: ['@components/admin/ApproveIngestionListView#ApproveIngestionListView'],
+        },
+      },
+    },
   },
   access: { read: isAdmin, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
