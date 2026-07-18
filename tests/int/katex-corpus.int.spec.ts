@@ -22,14 +22,14 @@ const collectStrings = (value: unknown, out: string[] = []): string[] => {
   return out
 }
 
-const formulaeFrom = (root: unknown) => collectStrings(root).flatMap((text) => formulaeFromMarkdown(text))
+const formulaeFrom = (root: unknown) => collectStrings(root).flatMap((text) => formulaeFromMarkdown(text).map((f) => f.formula))
 
 // KaTeX rewrites the passed `macros` object in place, so a fresh copy per
 // formula is required — a shared object leaks macro state across renders and
 // could false-green (or false-red) the guard. Matches src/components/
 // MarkdownLatex.tsx:14 and src/lib/katex.ts's per-render-copy note.
-const rendersClean = (formula: string) =>
-  !katex.renderToString(formula, { ...katexOptions, macros: { ...katexMacros } }).includes('katex-error')
+const rendersClean = (formula: string, displayMode = false) =>
+  !katex.renderToString(formula, { ...katexOptions, displayMode, macros: { ...katexMacros } }).includes('katex-error')
 
 const seedFormulae = formulaeFrom(seed)
 const exampleFormulae = formulaeFrom(example)

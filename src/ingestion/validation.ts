@@ -39,10 +39,13 @@ const countPDFPages = async (bytes: Uint8Array) => {
 }
 
 export const formulaeFromMarkdown = (markdown: string) => {
-  const formulae: string[] = []
+  const formulae: { formula: string; displayMode: boolean }[] = []
   const matcher = /\$\$([\s\S]*?)\$\$|(?<!\\)\$(?!\$)((?:\\.|[^$\\])+)\$/g
-  for (const match of markdown.matchAll(matcher)) formulae.push((match[1] ?? match[2]).trim())
-  return formulae.filter(Boolean)
+  for (const match of markdown.matchAll(matcher)) {
+    const isDisplay = match[1] !== undefined
+    formulae.push({ formula: (match[1] ?? match[2]).trim(), displayMode: isDisplay })
+  }
+  return formulae.filter((f) => f.formula.length > 0)
 }
 
 const contentHashInput = (manifest: Record<string, any>) => {
@@ -232,9 +235,9 @@ export async function validateIngestionRequest(
   _step = 'katex-markers';  for (const field of contentFields) {
     const value = manifest.item?.[field]
     if (typeof value !== 'string') continue
-    for (const formula of formulaeFromMarkdown(value)) {
+    for (const { formula, displayMode } of formulaeFromMarkdown(value)) {
       formulaCount += 1
-      const rendered = katex.renderToString(formula, katexOptions)
+      const rendered = katex.renderToString(formula, { ...katexOptions, displayMode })
       if (rendered.includes('katex-error')) addIssue(issues, 'KATEX_RENDER_ERROR', 'error', `/item/${field}`, `KaTeX could not render formula ${formulaCount}.`)
     }
     for (const match of value.matchAll(/asset:\/\/([a-z0-9][a-z0-9-]{1,63})/g)) {
