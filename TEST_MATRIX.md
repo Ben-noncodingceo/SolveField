@@ -108,6 +108,7 @@ Owner: @Olivia (测试/运营) · Dev: @David · Plan: @Cindy · v1 (2026-07-17)
 | `/problems/[slug]` 详情页：渲染 `contentOriginal`（Markdown + LaTeX） | 内容完整、无原始标记泄漏 |
 | i18n zh/en 切换；缺失翻译**优雅回退到 originalLanguage** | 不留空白、可切回原文 |
 | KaTeX 行内 `$...$` + 独立 `$$...$$`，`throwOnError:false`，与后台/ingest 契约**同一套 macros** | §附A 公式集全绿、两处渲染一致 |
+| **题干中无原始 LaTeX 文本命令泄漏**：`\textbf`/`\textit`/`\emph`/`\textrm`/`\textsf`/`\textup` 等 LaTeX 文本宏不在页面 HTML 中显示为原始字符（应被渲染层正确转换为 HTML 语义标签） | `curl` 页面 HTML 不含 `\textbf{`/`\textit{` 等原始标记 |
 | 匿名访客可读 published，**不暴露草稿/未审核内容** | 符合全局访问规则 |
 | 纯新增前端路由/组件，不改 Payload schema/迁移（需只读新字段先与 David 对齐） | 无 schema/migration 变更 |
 | 门禁：strict tsc / Next build / OpenNext worker build 三绿；SSR/OpenNext 渲染正常；README 三段 | 交付 @Olivia |
@@ -182,6 +183,7 @@ Owner: @Olivia (测试/运营) · Dev: @David · Plan: @Cindy · v1 (2026-07-17)
 | S2 | admin 后台 200 + 可登录 | curl / Playwright |
 | S3 | 语言切换 zh↔en UI 生效 | Playwright |
 | S4 | 打开一个题详情，公式已渲染（DOM 出现 .katex） | Playwright |
+| S4b | 题干 HTML 中无原始 LaTeX 文本命令泄漏（无 `\textbf{`/`\textit{` 等） | curl + grep |
 | S5 | 一个 Collection API 读取正常 | curl API |
 | S6 | 登录用户点赞一次成功、二次被拒 | Playwright/API |
 | S7 | 提交一个 Wiki 提案成功入库 | API |
