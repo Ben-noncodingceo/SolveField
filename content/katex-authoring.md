@@ -50,7 +50,7 @@ katexOptions = {
     "\\dd": "\\mathrm{d}",      // 微分号
     "\\ee": "\\mathrm{e}",      // 自然常数
     "\\vv": "\\boldsymbol{#1}", // 矢量（与全站统一）
-    "\\unit": "\\,\\mathrm{#1}" // 单位
+    "\\unit": "\\,\\mathrm{#1}" // 单位（已含前置细空格：用 \unit{} 时前面不要再加 \, / ~，否则会变双细空格）
   }
   // 如需化学式：trust + 引入 mhchem 扩展后可用 \ce{...}
 }
