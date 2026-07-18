@@ -76,7 +76,8 @@ export function ingestionEndpoints(bucket?: R2Bucket): Endpoint[] {
       checked = await validateIngestionRequest(body, bucket)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      req.payload.logger.error({ err: { message, stack: err instanceof Error ? err.stack : undefined } }, 'ingestion validation crash')
+      const stack = err instanceof Error ? err.stack : undefined
+      req.payload.logger.error({ err: { message, stack } }, 'ingestion validation crash')
       return json({ error: 'INGESTION_VALIDATION_CRASH', message: `Validation threw: ${message}` }, 422)
     }
     if (checked.hasErrors) return json({ error: 'INGESTION_VALIDATION_FAILED', issues: checked.issues }, 422)

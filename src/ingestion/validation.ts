@@ -31,7 +31,9 @@ const decodeBase64 = (value: string) => {
 const countPDFPages = async (bytes: Uint8Array) => {
   try {
     return (await PDFDocument.load(bytes, { updateMetadata: false })).getPageCount()
-  } catch {
+  } catch (err) {
+    // pdf-lib may throw in Workers (e.g. "n is not a function" when minified);
+    // treat as unreadable PDF rather than crashing validation.
     return 0
   }
 }
@@ -98,12 +100,15 @@ export async function validateIngestionRequest(
   bucket?: R2Bucket,
   options: { acceptServerRecomputedContentHash?: boolean } = {},
 ): Promise<ValidatedIngestion> {
+  let _step = 'start'
+  try {
   const manifest = structuredClone(body?.manifest ?? {})
   const rawManifest = body?.manifest ?? {}
   const issues: IngestionIssue[] = []
   const sourceBytes = new Map<string, Uint8Array>()
   const assetBytes = new Map<string, { bytes: Uint8Array; mediaType: string; originalFileName: string }>()
 
+  _step = 'schema';
   if (!validateSchema(manifest)) {
     for (const error of validateSchema.errors ?? []) {
       addIssue(issues, 'SCHEMA_INVALID', 'error', error.instancePath || '/', error.message ?? 'Schema validation failed.')
@@ -112,7 +117,7 @@ export async function validateIngestionRequest(
 
   const suppliedSources = new Map((body?.sourceFiles ?? []).map((file) => [file.fileId, file.dataBase64]))
   const files = new Map<string, Record<string, any>>()
-  for (const [index, file] of (manifest.sourceBundle?.files ?? []).entries()) {
+  _step = 'pdf-decode';  for (const [index, file] of (manifest.sourceBundle?.files ?? []).entries()) {
     if (files.has(file.fileId)) {
       addIssue(issues, 'DUPLICATE_SOURCE_FILE_ID', 'error', `/sourceBundle/files/${index}/fileId`, 'fileId must be unique within sourceBundle.files.')
       continue
@@ -217,7 +222,7 @@ export async function validateIngestionRequest(
   let formulaCount = 0
   const markerCounts = new Map<string, number>()
   const originalMarkerCounts = new Map<string, number>()
-  for (const field of contentFields) {
+  _step = 'katex-markers';  for (const field of contentFields) {
     const value = manifest.item?.[field]
     if (typeof value !== 'string') continue
     for (const formula of formulaeFromMarkdown(value)) {
@@ -237,7 +242,7 @@ export async function validateIngestionRequest(
     if (!imageKeys.has(key)) addIssue(issues, 'UNKNOWN_ASSET_MARKER', 'error', '/item/contentOriginal', `asset://${key} has no matching image record.`)
   }
 
-  const computedContentHash = await computeContentHash(manifest)
+  _step = 'content-hash';  const computedContentHash = await computeContentHash(manifest)
   if (!computedContentHash) addIssue(issues, 'CONTENT_CANONICALIZATION_FAILED', 'error', '/item', 'Content could not be canonicalized with JCS.')
   const contentHash = computedContentHash ?? `sha256:${await sha256Hex('')}`
   if (!options.acceptServerRecomputedContentHash && rawManifest.item?.contentHash !== contentHash) addIssue(issues, 'CONTENT_HASH_MISMATCH', 'error', '/item/contentHash', 'Reported contentHash does not match normalized JCS content.')
@@ -275,7 +280,7 @@ export async function validateIngestionRequest(
   }
   manifest.workflow = { ...manifest.workflow, createAs: 'draft', publishAllowed: false, humanApprovalRequired: true, reviewState: 'needs-review' }
 
-  if (!hasErrors && bucket) {
+  _step = 'r2-upload';  if (!hasErrors && bucket) {
     try {
       await Promise.all([
         ...[...files.values()].map((file) => bucket.put(file.r2ObjectKey, sourceBytes.get(file.fileId)!, { httpMetadata: { contentType: 'application/pdf' } })),
@@ -294,6 +299,10 @@ export async function validateIngestionRequest(
 
   const identityKey = `${manifest.competition?.competitionSlug ?? ''}\n${manifest.paper?.paperCode ?? ''}\n${manifest.item?.problemCode ?? ''}`
   return { manifest, sourceBytes, assetBytes, issues, hasErrors, identityKey }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`Validation step ${_step}: ${message}`)
+  }
 }
 
 export const normalizedSimilarity = (left: string, right: string) => {
