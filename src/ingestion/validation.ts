@@ -276,15 +276,20 @@ export async function validateIngestionRequest(
   manifest.workflow = { ...manifest.workflow, createAs: 'draft', publishAllowed: false, humanApprovalRequired: true, reviewState: 'needs-review' }
 
   if (!hasErrors && bucket) {
-    await Promise.all([
-      ...[...files.values()].map((file) => bucket.put(file.r2ObjectKey, sourceBytes.get(file.fileId)!, { httpMetadata: { contentType: 'application/pdf' } })),
-      ...(manifest.item?.images ?? []).flatMap((image: Record<string, any>) => {
-        const asset = assetBytes.get(image.assetKey)
-        return asset && image.r2ObjectKey
-          ? [bucket.put(image.r2ObjectKey, asset.bytes, { httpMetadata: { contentType: asset.mediaType } })]
-          : []
-      }),
-    ])
+    try {
+      await Promise.all([
+        ...[...files.values()].map((file) => bucket.put(file.r2ObjectKey, sourceBytes.get(file.fileId)!, { httpMetadata: { contentType: 'application/pdf' } })),
+        ...(manifest.item?.images ?? []).flatMap((image: Record<string, any>) => {
+          const asset = assetBytes.get(image.assetKey)
+          return asset && image.r2ObjectKey
+            ? [bucket.put(image.r2ObjectKey, asset.bytes, { httpMetadata: { contentType: asset.mediaType } })]
+            : []
+        }),
+      ])
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      addIssue(issues, 'R2_UPLOAD_FAILED', 'error', '/sourceFiles', `Failed to upload source or asset files to R2: ${message}`)
+    }
   }
 
   const identityKey = `${manifest.competition?.competitionSlug ?? ''}\n${manifest.paper?.paperCode ?? ''}\n${manifest.item?.problemCode ?? ''}`

@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import type { Endpoint, PayloadRequest } from 'payload'
 import { commitTransaction, initTransaction, killTransaction } from 'payload'
 
-import type { IngestionRequestBody } from './types'
+import type { IngestionRequestBody, ValidatedIngestion } from './types'
 import { normalizedSimilarity, sha256Hex, validateIngestionRequest } from './validation'
 
 type TokenDoc = { id: string | number; scopes?: string[]; disabled?: boolean; expiresAt?: string }
@@ -71,7 +71,14 @@ export function ingestionEndpoints(bucket?: R2Bucket): Endpoint[] {
       return json({ error: 'INVALID_JSON', message: 'Request body must be JSON.' }, 400)
     }
 
-    const checked = await validateIngestionRequest(body, bucket)
+    let checked: ValidatedIngestion
+    try {
+      checked = await validateIngestionRequest(body, bucket)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      req.payload.logger.error({ err: { message, stack: err instanceof Error ? err.stack : undefined } }, 'ingestion validation crash')
+      return json({ error: 'INGESTION_VALIDATION_CRASH', message: `Validation threw: ${message}` }, 422)
+    }
     if (checked.hasErrors) return json({ error: 'INGESTION_VALIDATION_FAILED', issues: checked.issues }, 422)
     const manifest = checked.manifest
 
