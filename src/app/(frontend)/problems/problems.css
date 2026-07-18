@@ -4,7 +4,9 @@
   max-width: 860px;
   margin: 0 auto;
   padding: 32px 20px 48px;
+  background: #fff;
   color: #1f2937;
+  min-height: 100vh;
 }
 
 .problemsPage a {
@@ -62,6 +64,7 @@
 }
 
 .problemCard {
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 14px 18px;
@@ -88,12 +91,13 @@
 
 .tagChip {
   display: inline-block;
-  background: #eef2ff;
-  color: #4338ca;
-  border-radius: 999px;
-  padding: 1px 9px;
-  font-size: 12px;
-  margin: 0 4px 4px 0;
+  color: #9ca3af;
+  font-size: 11px;
+  margin: 0 6px 4px 0;
+}
+
+.tagChip::before {
+  content: '#';
 }
 
 .pagination {
@@ -118,13 +122,18 @@
 
 .problemSection {
   margin-top: 28px;
+  background: #fff;
+  color: #1f2937;
+  border-radius: 10px;
+  padding: 20px 24px;
+  border: 1px solid #e5e7eb;
 }
 
 .problemSection > h2 {
   font-size: 18px;
   border-left: 4px solid #4f46e5;
   padding-left: 10px;
-  margin-bottom: 12px;
+  margin: 0 0 12px;
 }
 
 .fallbackNotice {
