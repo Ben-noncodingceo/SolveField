@@ -77,9 +77,15 @@ log "✓ Token valid (wrangler whoami OK)"
 
 # 0c. Bindings: D1/R2/KV present in wrangler config
 log "Checking bindings…"
-BINDINGS_OUTPUT="$(npx wrangler deploy --dry-run --config wrangler.jsonc 2>&1 || true)"
+# Use wrangler deploy --dry-run to verify bindings resolve (stderr expected for dry-run abort)
+set +e
+BINDINGS_OUTPUT="$(npx wrangler deploy --dry-run --config wrangler.jsonc 2>&1)"
+DRY_RUN_RC=$?
+set -e
+# dry-run aborts with non-zero — check the output regardless
 if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.D1'; then
-  err "D1 binding missing from deploy output."
+  err "D1 binding missing from deploy output. Dry-run output:"
+  echo "$BINDINGS_OUTPUT"
   exit 1
 fi
 if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.R2'; then
@@ -114,9 +120,16 @@ log "Cleaning build cache…"
 rm -rf .next .open-next
 log "✓ Cache cleared"
 
-log "Running pnpm build (next build + OpenNext worker)…"
+log "Step 1a: next build…"
 if ! pnpm run build 2>&1; then
-  err "Build failed."
+  err "next build failed."
+  exit 2
+fi
+log "✓ next build complete"
+
+log "Step 1b: opennextjs-cloudflare build…"
+if ! pnpm exec opennextjs-cloudflare build 2>&1; then
+  err "OpenNext build failed."
   exit 2
 fi
 
@@ -125,12 +138,16 @@ if [ ! -d ".open-next" ]; then
   err ".open-next directory not found after build."
   exit 2
 fi
+if [ ! -f ".open-next/worker.js" ]; then
+  err ".open-next/worker.js not found — OpenNext build may have failed silently."
+  exit 2
+fi
 ARTIFACT_COUNT=$(find .open-next -type f | wc -l | tr -d ' ')
 if [ "$ARTIFACT_COUNT" -lt 10 ]; then
   err "Build artifact looks empty: only ${ARTIFACT_COUNT} files in .open-next/"
   exit 2
 fi
-log "✓ Build complete: ${ARTIFACT_COUNT} files in .open-next/"
+log "✓ Build complete: ${ARTIFACT_COUNT} files in .open-next/ (worker.js present)"
 
 # ════════════════════════════════════════════════════════════════════════════════
 # STEP 2 — Workerd local smoke
@@ -184,7 +201,15 @@ log "✓ All local smoke endpoints 200"
 log "══════ STEP 3: Deploy ══════"
 
 # Record version before deploy for potential rollback
-VERSIONS_BEFORE=$(npx wrangler versions list --config wrangler.jsonc --json 2>/dev/null | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+log "Recording current active version…"
+VERSIONS_BEFORE=""
+if command -v jq &>/dev/null; then
+  VERSIONS_BEFORE=$(npx wrangler versions list --config wrangler.jsonc --json 2>/dev/null | jq -r '.[0].id // empty' 2>/dev/null || echo "")
+fi
+if [ -z "$VERSIONS_BEFORE" ]; then
+  # fallback: grep for first version ID in text output
+  VERSIONS_BEFORE=$(npx wrangler versions list --config wrangler.jsonc 2>/dev/null | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1 || echo "")
+fi
 log "Current active version before deploy: ${VERSIONS_BEFORE:-unknown}"
 
 log "Running wrangler deploy…"
@@ -195,7 +220,11 @@ DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler.jsonc 2>&1) || {
 }
 
 # Extract new version from output
-NEW_VERSION=$(echo "$DEPLOY_OUTPUT" | grep -o 'Current Version ID: [a-f0-9-]*' | awk '{print $NF}' || echo "")
+NEW_VERSION=$(echo "$DEPLOY_OUTPUT" | grep -oE 'Current Version ID: [a-f0-9-]+' | awk '{print $NF}' || echo "")
+if [ -z "$NEW_VERSION" ]; then
+  # fallback: grep for any version-id pattern
+  NEW_VERSION=$(echo "$DEPLOY_OUTPUT" | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | tail -1 || echo "")
+fi
 if [ -z "$NEW_VERSION" ]; then
   err "Could not determine new version ID from deploy output."
   exit 4
