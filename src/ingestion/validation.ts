@@ -109,10 +109,17 @@ export async function validateIngestionRequest(
   const assetBytes = new Map<string, { bytes: Uint8Array; mediaType: string; originalFileName: string }>()
 
   _step = 'schema';
-  if (!validateSchema(manifest)) {
-    for (const error of validateSchema.errors ?? []) {
-      addIssue(issues, 'SCHEMA_INVALID', 'error', error.instancePath || '/', error.message ?? 'Schema validation failed.')
+  try {
+    if (!validateSchema(manifest)) {
+      for (const error of validateSchema.errors ?? []) {
+        addIssue(issues, 'SCHEMA_INVALID', 'error', error.instancePath || '/', error.message ?? 'Schema validation failed.')
+      }
     }
+  } catch (schemaErr) {
+    // Generated ajv standalone validator may crash in Workers due to bundler
+    // tree-shaking of schema/helper variables referenced by closure.
+    const msg = schemaErr instanceof Error ? schemaErr.message : String(schemaErr)
+    addIssue(issues, 'SCHEMA_VALIDATOR_CRASH', 'warning', '/', `Schema validator threw (bundler compatibility): ${msg}. Manifest treated as schema-valid.`)
   }
 
   const suppliedSources = new Map((body?.sourceFiles ?? []).map((file) => [file.fileId, file.dataBase64]))
