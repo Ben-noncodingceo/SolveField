@@ -75,28 +75,9 @@ if ! npx wrangler whoami >/dev/null 2>&1; then
 fi
 log "✓ Token valid (wrangler whoami OK)"
 
-# 0c. Bindings: D1/R2/KV present in wrangler config
-log "Checking bindings…"
-# Use wrangler deploy --dry-run to verify bindings resolve (stderr expected for dry-run abort)
-set +e
-BINDINGS_OUTPUT="$(npx wrangler deploy --dry-run --config wrangler.jsonc 2>&1)"
-DRY_RUN_RC=$?
-set -e
-# dry-run aborts with non-zero — check the output regardless
-if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.D1'; then
-  err "D1 binding missing from deploy output. Dry-run output:"
-  echo "$BINDINGS_OUTPUT"
-  exit 1
-fi
-if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.R2'; then
-  err "R2 binding missing from deploy output."
-  exit 1
-fi
-if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.KV'; then
-  err "KV binding missing from deploy output."
-  exit 1
-fi
-log "✓ Bindings verified (D1, R2, KV)"
+# 0c. Bindings: D1/R2/KV present in wrangler config (moved to after build, needs .open-next/worker.js)
+# See STEP 1b for the actual check — we defer binding verification until after OpenNext build
+# since wrangler deploy --dry-run requires the entry-point file.
 
 # 0d. Schema drift check (skip if --skip-db)
 if [ "$SKIP_DB" = false ]; then
@@ -148,6 +129,26 @@ if [ "$ARTIFACT_COUNT" -lt 10 ]; then
   exit 2
 fi
 log "✓ Build complete: ${ARTIFACT_COUNT} files in .open-next/ (worker.js present)"
+
+# 1c. Post-build binding check (needs .open-next/worker.js to exist)
+log "Checking bindings (post-build)…"
+set +e
+BINDINGS_OUTPUT="$(npx wrangler deploy --dry-run --config wrangler.jsonc 2>&1)"
+set -e
+if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.D1'; then
+  err "D1 binding missing from deploy output. Bindings output:"
+  echo "$BINDINGS_OUTPUT"
+  exit 1
+fi
+if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.R2'; then
+  err "R2 binding missing from deploy output."
+  exit 1
+fi
+if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.KV'; then
+  err "KV binding missing from deploy output."
+  exit 1
+fi
+log "✓ Bindings verified (D1, R2, KV)"
 
 # ════════════════════════════════════════════════════════════════════════════════
 # STEP 2 — Workerd local smoke
