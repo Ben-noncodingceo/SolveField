@@ -6,25 +6,13 @@ import { PDFDocument } from 'pdf-lib'
 
 import schema from '../../docs/ingestion-v1/schema.json' with { type: 'json' }
 import taxonomy from '../../content/tags-taxonomy.json' with { type: 'json' }
+import { katexOptions } from '../lib/katex'
 import type { IngestionIssue, IngestionRequestBody, ValidatedIngestion } from './types'
 
 const ajv = new Ajv({ allErrors: true, strict: false })
 addFormats(ajv)
 const validateSchema = ajv.compile(schema)
 const allowedTags = new Set(taxonomy.categories.flatMap((category) => category.subtopics.map((tag) => tag.key)))
-
-const katexOptions: katex.KatexOptions = {
-  throwOnError: false,
-  strict: 'warn',
-  trust: false,
-  macros: {
-    '\\dd': '\\mathrm{d}',
-    '\\ee': '\\mathrm{e}',
-    '\\ii': '\\mathrm{i}',
-    '\\vect': '\\boldsymbol{#1}',
-    '\\unit': '\\mathrm{#1}',
-  },
-}
 
 export const normalizeText = (value: string) =>
   value.normalize('NFC').replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n').map((line) => line.trimEnd()).join('\n').trim()
