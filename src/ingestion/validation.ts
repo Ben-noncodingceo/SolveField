@@ -1,17 +1,15 @@
-import Ajv from 'ajv'
-import addFormats from 'ajv-formats'
 import canonicalize from 'canonicalize'
 import katex from 'katex'
 import { PDFDocument } from 'pdf-lib'
 
-import schema from '../../docs/ingestion-v1/schema.json' with { type: 'json' }
 import taxonomy from '../../content/tags-taxonomy.json' with { type: 'json' }
 import { katexOptions } from '../lib/katex'
+// Precompiled from docs/ingestion-v1/schema.json (pnpm run generate:schema-validator).
+// Cloudflare Workers forbid runtime code generation, so ajv.compile() must
+// never run in the worker — it crashes workerd at startup with
+// "Error compiling schema" and takes the whole site down.
+import validateSchema from './schemaValidator.generated'
 import type { IngestionIssue, IngestionRequestBody, ValidatedIngestion } from './types'
-
-const ajv = new Ajv({ allErrors: true, strict: false })
-addFormats(ajv)
-const validateSchema = ajv.compile(schema)
 const allowedTags = new Set(taxonomy.categories.flatMap((category) => category.subtopics.map((tag) => tag.key)))
 
 export const normalizeText = (value: string) =>
