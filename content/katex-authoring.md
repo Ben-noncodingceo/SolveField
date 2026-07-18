@@ -23,7 +23,7 @@
 **其它红线：**
 - ❌ `\label` / `\ref` / 自动编号 → KaTeX 无编号系统；需要编号用 `\tag{1}`。
 - ❌ `\newcommand` / `\def` 写在题目正文里通常无效 → **自定义宏必须在 KaTeX 全局 `macros` 选项里预置**（见 §4），不要指望在单题内定义。
-- ❌ `siunitx`（`\SI{}{}`、`\qty`）、`\begin{tikzpicture}`、`\usepackage`、`\includegraphics` → 全部不支持。单位用 `\,\mathrm{...}`；图片走图片字段/相对路径，不用公式画图。
+- ❌ `siunitx`（`\SI{}{}`、`\qty`）、`\begin{tikzpicture}`、`\usepackage`、`\includegraphics` → 全部不支持。单位首选 `\,\mathrm{...}`（数字与单位间已含细空格）；若改用宏 `\unit{...}`，其定义已内建细空格，**前面不要再加 `\,`、`\ ` 或 `~`**，否则会渲染成双细空格（`5\,\unit{m}` → `5\,\,m`，偏宽但不报错）——二者择一，勿叠加。图片走图片字段/相对路径，不用公式画图。
 - ❌ 化学式 `\ce{...}` 默认不支持 → 若需要，开启 KaTeX 的 **mhchem 扩展**；否则简单化学式用普通数学写：`\mathrm{O_3}`、`\mathrm{O_2}`。
 - ✅ 支持：`\frac \dfrac \sqrt \sum \int \oint \prod \lim \vec \hat \bar \boldsymbol \mathrm \mathbf \text \cdot \times \partial \nabla \approx \propto \Rightarrow \Longrightarrow \cases \substack \overset \underset \color \left \right \big \Big` 等常用命令。
 
