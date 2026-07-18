@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
+import { zh } from '@payloadcms/translations/languages/zh'
+import { en } from '@payloadcms/translations/languages/en'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -84,6 +86,10 @@ export default buildConfig({
   endpoints: ingestionEndpoints(cloudflare.env.R2),
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
+  i18n: {
+    fallbackLanguage: 'zh',
+    supportedLanguages: { en, zh },
+  },
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
