@@ -10,6 +10,15 @@ export const IngestionJobs: CollectionConfig = {
   },
   access: { read: isAdmin, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
+    {
+      name: 'approveAction',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@components/admin/ApproveIngestionButton#ApproveIngestionButton',
+        },
+      },
+    },
     { name: 'importId', type: 'text', required: true, unique: true, index: true },
     { name: 'idempotencyKey', type: 'text', required: true, unique: true, index: true },
     { name: 'actorToken', type: 'relationship', relationTo: 'ingestion-tokens', required: true, index: true },
