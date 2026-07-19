@@ -14,7 +14,7 @@ export default function TopNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="topNav">
+    <nav aria-label="主导航" className="topNav">
       <Link className="navBrand" href="/">
         SolveField
       </Link>
@@ -26,6 +26,7 @@ export default function TopNav() {
               className={`navCard${active ? ' active' : ''}`}
               href={href}
               key={href}
+              aria-current={active ? 'page' : undefined}
             >
               {label}
             </Link>

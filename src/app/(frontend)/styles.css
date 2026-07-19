@@ -48,10 +48,18 @@
   white-space: nowrap;
 }
 
-.navCard:hover {
+.navCard:hover,
+.navCard:focus-visible {
   background: rgb(30, 30, 36);
   border-color: rgb(90, 90, 100);
   color: rgb(220, 220, 230);
+}
+
+.navBrand:focus-visible,
+.navCard:focus-visible,
+.ctaButton:focus-visible {
+  outline: 2px solid rgb(129, 140, 248);
+  outline-offset: 3px;
 }
 
 .navCard.active {
@@ -81,7 +89,8 @@
   transition: background 150ms ease, transform 150ms ease;
 }
 
-.ctaButton:hover {
+.ctaButton:hover,
+.ctaButton:focus-visible {
   background: rgb(99, 90, 249);
   transform: translateY(-1px);
 }
@@ -92,7 +101,8 @@
   color: rgb(200, 200, 215);
 }
 
-.ctaButton.secondary:hover {
+.ctaButton.secondary:hover,
+.ctaButton.secondary:focus-visible {
   background: rgb(45, 45, 52);
   border-color: rgb(110, 110, 120);
 }
