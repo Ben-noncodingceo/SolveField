@@ -1,5 +1,6 @@
 import React from 'react'
 import './styles.css'
+import TopNav from './TopNav'
 
 export const metadata = {
   description: '物理竞赛试题 Wiki 分享社区',
@@ -12,8 +13,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en">
+    <html lang="zh">
       <body>
+        <TopNav />
         <main>{children}</main>
         <footer
           style={{

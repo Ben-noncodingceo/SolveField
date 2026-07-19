@@ -6,6 +6,127 @@
   box-sizing: border-box;
 }
 
+/* ── 全局顶部导航（task #18）── */
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: rgb(15, 15, 18);
+  border-bottom: 1px solid rgb(40, 40, 45);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-wrap: wrap;
+}
+
+.navBrand {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgb(230, 230, 240);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.navCards {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.navCard {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid rgb(55, 55, 62);
+  border-radius: 10px;
+  color: rgb(170, 170, 185);
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  white-space: nowrap;
+}
+
+.navCard:hover {
+  background: rgb(30, 30, 36);
+  border-color: rgb(90, 90, 100);
+  color: rgb(220, 220, 230);
+}
+
+.navCard.active {
+  background: rgb(79, 70, 229);
+  border-color: rgb(99, 90, 249);
+  color: #fff;
+}
+
+/* ── 首页 CTA 按钮（task #18）── */
+.homeCta {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: 12px 28px;
+  background: rgb(79, 70, 229);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.ctaButton:hover {
+  background: rgb(99, 90, 249);
+  transform: translateY(-1px);
+}
+
+.ctaButton.secondary {
+  background: rgb(30, 30, 36);
+  border: 1px solid rgb(70, 70, 76);
+  color: rgb(200, 200, 215);
+}
+
+.ctaButton.secondary:hover {
+  background: rgb(45, 45, 52);
+  border-color: rgb(110, 110, 120);
+}
+
+/* ── 桌面适配（task #18）—— 16:9 / 16:10 主流分辨率 ── */
+@media (min-width: 1280px) {
+  .home {
+    max-width: 1100px;
+  }
+
+  .problemsPage {
+    max-width: 960px;
+  }
+
+  .topNav {
+    padding: 14px 40px;
+  }
+
+  .navCard {
+    padding: 8px 20px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .home {
+    max-width: 1200px;
+  }
+
+  .problemsPage {
+    max-width: 1024px;
+  }
+}
+
 html {
   font-size: 18px;
   line-height: 32px;

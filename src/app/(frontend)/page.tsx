@@ -1,5 +1,6 @@
 import { headers as getHeaders } from 'next/headers.js'
 import Image from 'next/image'
+import Link from 'next/link'
 import { getPayload } from 'payload'
 import React from 'react'
 
@@ -26,6 +27,10 @@ export default async function HomePage() {
         />
         <h1>SolveField</h1>
         <p className="tagline">物理竞赛试题 Wiki 分享社区</p>
+        <div className="homeCta">
+          <Link className="ctaButton" href="/problems">进入题库</Link>
+          <Link className="ctaButton secondary" href="/exams">按考试浏览</Link>
+        </div>
         {user && 'email' in user ? <p className="welcome">欢迎回来，{user.email}</p> : null}
       </div>
       <a
