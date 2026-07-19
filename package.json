@@ -34,7 +34,7 @@
     "@payloadcms/next": "3.82.1",
     "@payloadcms/richtext-lexical": "3.82.1",
     "@payloadcms/storage-r2": "3.82.1",
-    "@payloadcms/translations": "^3.86.0",
+    "@payloadcms/translations": "^3.82.1",
     "@payloadcms/ui": "3.82.1",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
