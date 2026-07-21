@@ -3,7 +3,7 @@
 # SolveField deploy.sh — Standardized CI-style deploy pipeline
 #
 # Usage:
-#   CLOUDFLARE_API_TOKEN=<token> bash scripts/deploy.sh [--skip-db]
+#   CLOUDFLARE_API_TOKEN=<token> bash scripts/deploy.sh [--skip-db] [--preflight-only]
 #
 # What it does:
 #   1. Pre-flight: check token, bindings, schema drift
@@ -36,6 +36,7 @@ HEALTH_ENDPOINTS=(
 SMOKE_PORT=8788
 SMOKE_ENDPOINTS=("http://localhost:${SMOKE_PORT}/" "http://localhost:${SMOKE_PORT}/problems" "http://localhost:${SMOKE_PORT}/admin")
 SKIP_DB=false
+PREFLIGHT_ONLY=false
 ROLLBACK_TARGET=""  # filled at deploy step if we need to rollback
 WRANGLER_PID=""
 SMOKE_PERSIST_DIR=""
@@ -88,6 +89,7 @@ trap on_signal INT TERM
 for arg in "$@"; do
   case "$arg" in
     --skip-db) SKIP_DB=true ;;
+    --preflight-only) PREFLIGHT_ONLY=true ;;
     *) err "Unknown argument: $arg"; exit 1 ;;
   esac
 done
@@ -247,6 +249,11 @@ if [ "$SMOKE_FAILED" = true ]; then
   exit 3
 fi
 log "✓ All local smoke endpoints 200"
+
+if [ "$PREFLIGHT_ONLY" = true ]; then
+  log "══════ PREFLIGHT-ONLY PASSED — production was not changed ══════"
+  exit 0
+fi
 
 # ════════════════════════════════════════════════════════════════════════════════
 # STEP 3 — Deploy
