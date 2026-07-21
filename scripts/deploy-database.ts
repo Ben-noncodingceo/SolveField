@@ -12,12 +12,17 @@ import { cloudflareEnvironmentArgs, runCommand } from './deploy-utils'
 type D1Result<Row> = { results?: Row[]; success?: boolean }
 type CountRow = { count: number }
 
-const unknownArgs = process.argv.slice(2).filter((arg) => arg !== '--local' && arg !== '--')
+const unknownArgs = process.argv
+  .slice(2)
+  .filter((arg) => arg !== '--local' && arg !== '--check-only' && arg !== '--')
 if (unknownArgs.length > 0) throw new Error(`Unknown argument(s): ${unknownArgs.join(', ')}`)
 
 const isLocal = process.argv.includes('--local')
+const isCheckOnly = process.argv.includes('--check-only')
 if (!isLocal && !process.env.CLOUDFLARE_API_TOKEN) {
-  throw new Error('Remote database deployment requires CLOUDFLARE_API_TOKEN')
+  throw new Error(
+    `Remote database ${isCheckOnly ? 'verification' : 'deployment'} requires CLOUDFLARE_API_TOKEN`,
+  )
 }
 
 const environmentArgs = cloudflareEnvironmentArgs()
@@ -81,6 +86,12 @@ try {
       )
     }
 
+    if (isCheckOnly) {
+      throw new Error(
+        `Unapplied migration detected: ${migration.name}. Run pnpm run deploy:database before deploying the Worker.`,
+      )
+    }
+
     const statements = extractUpStatements(migration.file)
     const tracking = `INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES (
   '${migration.name}', ${deploymentBatch},
@@ -98,7 +109,11 @@ try {
     console.log(`Migration applied and verified: ${migration.name}`)
   }
 
-  runWrangler(['d1', 'execute', 'D1', ...targetArgs, '--command', 'PRAGMA optimize'])
+  if (isCheckOnly) {
+    console.log(`Schema check passed: ${migrationDefinitions.length} migration(s) applied and verified`)
+  } else {
+    runWrangler(['d1', 'execute', 'D1', ...targetArgs, '--command', 'PRAGMA optimize'])
+  }
 } finally {
   rmSync(tempDir, { recursive: true, force: true })
 }

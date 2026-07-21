@@ -90,6 +90,14 @@ pnpm exec playwright test ingestion.e2e.spec.ts --config=playwright.config.ts --
 6. push `main` → Production；PR/分支 → Preview。
 7. 绑定自定义域名 `solvefield.playphysics.net`。
 
+需要人工发布时统一走可回滚 SOP：
+
+```bash
+CLOUDFLARE_API_TOKEN=<token> bash scripts/deploy.sh
+```
+
+`scripts/deploy.sh` 会先以只读方式校验远端 `payload_migrations` 和每个 schema sentinel，未应用/半应用迁移会阻断发布；然后清空 `.next/.open-next`，依次做 Next + OpenNext 全量构建、D1/R2/KV binding dry-run 和本地 workerd 三端 smoke。发布前通过 `wrangler deployments status --json` 锁定当前唯一 100% 流量版本作为 rollback target；上线后五个生产端点带重试验收，失败则非交互 `rollback --yes` 并重新验证。`--skip-db` 只用于已有独立迁移证据的应急场景；它会在输出中明确警告。
+
 细节与已知限制（sharp 不可用、admin 包体积、D1 beta 等）见 ADR。
 
 ---
@@ -104,7 +112,7 @@ pnpm exec playwright test ingestion.e2e.spec.ts --config=playwright.config.ts --
 - **Phase 1A 本次变更**：新增隔离的 `IngestionJobs` / `IngestionItems` / `IngestionAssets` 与 hash-only `IngestionTokens`；`POST /api/ingestion/jobs` 服务端重算 Draft-07 schema、PDF/hash/JCS 幂等、taxonomy、页码/bbox/marker/KaTeX；error 返回 422 且不落草稿，warning 仅落 `needs-review`；实现按冻结顺序的幂等/版本/疑似重复判定；service token 只能 create/update/read-own；管理员会话独占 `/approve`，在 D1 事务中写 Competition/Media/Problem 和完整审计。契约与用法见 [`docs/ingestion-v1/api.md`](docs/ingestion-v1/api.md)。
 - **Phase 1 本次变更**：新增 5 张核心 Collection（Competitions/Problems/ProblemRatings/ProblemEdits/Users 角色化）+ 保留 Media；字段对齐 `content/seed.schema.json`（补 totalDislikes/source/originalLanguage/三语/审计字段）；user/editor/admin 权限（访客只读 published、用户不能直改题、Users 目录仅 admin 可见且 user/editor 只读自己）；`(problem,user)` DB 级复合唯一；tags 值域派生自 `content/tags-taxonomy.json`；加 KV binding；生成迁移 `20260717_045649_phase1_collections`；幂等 seed（本地 `pnpm seed`、生产 `pnpm run seed:remote`，均带结果校验）；`push:false` 走迁移模式。本地 tsc/build/迁移/seed/`check:phase1` 全绿。
 - **构建期 D1 隔离**：`pnpm build` 与 OpenNext build 设置 `SOLVEFIELD_EPHEMERAL_PROXY=1`，使并行 page-data worker 使用不落盘的 Miniflare bindings，避免共享 `.wrangler/state` 的 SQLite 锁/只读竞争；本地 dev 与 Payload CLI 仍使用持久化 D1。
-- **部署脚本防假绿**：app/database 编排仅在 `CLOUDFLARE_ENV` 非空时追加 `--env <name>`，默认环境完全不传 `--env`；OpenNext 只负责生成 bundle，实际发布走已验证可靠的 `wrangler deploy`；发布前后比较 `wrangler versions list --json`，未产生新 Worker version 即非零失败。
+- **部署脚本防假绿**：app/database 编排仅在 `CLOUDFLARE_ENV` 非空时追加 `--env <name>`，默认环境完全不传 `--env`；OpenNext 只负责生成 bundle，实际发布走已验证可靠的 `wrangler deploy`；手动 SOP 用远端迁移 tracking + schema sentinel 硬门禁，并从 `wrangler deployments status --json` 取得真正承接 100% 流量的回滚版本，不再把“最新创建版本”当作“当前活跃版本”。
 - **本次首页变更**：使用 owner 提供的 SolveField Logo；清除 Payload 模板/Documentation/编辑器外链；管理员入口改为右上角小锁图标（tooltip + aria-label），仅链接内部 `/admin`；真实安全门仍为 Payload 邮箱+强密码，已泄露密码不使用、不入库。
 - **下一步**：Olivia 部署 task #18 最新 main，验收 `/` `/problems` `/exams` `/topics` `/admin` 200、导航高亮、首页 CTA、16:9 桌面布局与键盘焦点；并继续按 Preview/生产清单验收 Phase 1A 迁移与 task #12 只读题目回归。
 

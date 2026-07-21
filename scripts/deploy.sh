@@ -10,15 +10,15 @@
 #   2. Clean build: rm -rf .next .open-next → full rebuild
 #   3. Workerd smoke: wrangler dev --local (3 endpoints 200)
 #   4. Deploy: wrangler deploy
-#   5. Health check: production 4 endpoints 200
-#   6. Auto-rollback on any failure
+#   5. Health check: production 5 endpoints healthy
+#   6. Auto-rollback on post-deploy health failure
 #
 # Exit codes:
 #   0 — success, production verified healthy
 #   1 — pre-flight failed
 #   2 — build failed
 #   3 — local smoke failed
-#   4 — deploy failed (auto-rollback attempted)
+#   4 — deploy/version verification failed (rollback if active version changed)
 #   5 — health check failed (auto-rollback attempted)
 # ================================================================================
 
@@ -37,6 +37,7 @@ SMOKE_PORT=8788
 SMOKE_ENDPOINTS=("http://localhost:${SMOKE_PORT}/" "http://localhost:${SMOKE_PORT}/problems" "http://localhost:${SMOKE_PORT}/admin")
 SKIP_DB=false
 ROLLBACK_TARGET=""  # filled at deploy step if we need to rollback
+WRANGLER_PID=""
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,6 +47,35 @@ NC='\033[0m'
 log()  { echo -e "${GREEN}[deploy.sh]${NC} $*"; }
 warn() { echo -e "${YELLOW}[deploy.sh] WARN${NC} $*"; }
 err()  { echo -e "${RED}[deploy.sh] ERROR${NC} $*"; }
+
+read_active_version() {
+  local deployment_status
+  if ! deployment_status=$(npx wrangler deployments status --config wrangler.jsonc --json 2>/dev/null); then
+    return 1
+  fi
+  printf '%s' "$deployment_status" | node -e '
+    const deployment = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
+    const versions = Array.isArray(deployment.versions) ? deployment.versions : [];
+    if (versions.length !== 1 || Number(versions[0].percentage) !== 100 || !versions[0].version_id) process.exit(1);
+    process.stdout.write(versions[0].version_id);
+  '
+}
+
+cleanup() {
+  if [ -n "$WRANGLER_PID" ]; then
+    kill "$WRANGLER_PID" 2>/dev/null || true
+    wait "$WRANGLER_PID" 2>/dev/null || true
+    WRANGLER_PID=""
+  fi
+}
+
+on_signal() {
+  cleanup
+  exit 130
+}
+
+trap cleanup EXIT
+trap on_signal INT TERM
 
 # ── Argument parsing ────────────────────────────────────────────────────────────
 for arg in "$@"; do
@@ -81,15 +111,14 @@ log "✓ Token valid (wrangler whoami OK)"
 
 # 0d. Schema drift check (skip if --skip-db)
 if [ "$SKIP_DB" = false ]; then
-  log "Checking for unapplied migrations (schema drift)…"
-  # Compare local migration files vs remote payload_migrations table
-  LOCAL_MIGRATIONS=$(ls src/migrations/ 2>/dev/null | grep -c '\.ts$' || echo 0)
-  if [ "$LOCAL_MIGRATIONS" -gt 0 ]; then
-    echo "  Local migrations: $LOCAL_MIGRATIONS file(s)"
-    echo "  (Manual check required — verify all local migrations are applied on remote D1 before proceeding.)"
-    warn "Schema drift check is advisory. Pausing 3s for human review…"
-    sleep 3
+  log "Checking remote D1 migration tracking and schema sentinels…"
+  if ! pnpm exec tsx scripts/deploy-database.ts --check-only; then
+    err "Remote D1 schema is not aligned with the local migration registry. Deploying code is blocked."
+    exit 1
   fi
+  log "✓ Remote D1 schema matches local migrations"
+else
+  warn "Remote D1 schema check skipped by explicit --skip-db"
 fi
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -134,7 +163,13 @@ log "✓ Build complete: ${ARTIFACT_COUNT} files in .open-next/ (worker.js prese
 log "Checking bindings (post-build)…"
 set +e
 BINDINGS_OUTPUT="$(npx wrangler deploy --dry-run --config wrangler.jsonc 2>&1)"
+BINDINGS_STATUS=$?
 set -e
+if [ "$BINDINGS_STATUS" -ne 0 ]; then
+  err "Wrangler binding dry-run failed:"
+  echo "$BINDINGS_OUTPUT"
+  exit 1
+fi
 if ! echo "$BINDINGS_OUTPUT" | grep -q 'env.D1'; then
   err "D1 binding missing from deploy output. Bindings output:"
   echo "$BINDINGS_OUTPUT"
@@ -162,7 +197,7 @@ WRANGLER_PID=$!
 # Wait for server to be ready (max 15s)
 READY=false
 for i in $(seq 1 15); do
-  if curl -s "http://localhost:${SMOKE_PORT}/" >/dev/null 2>&1; then
+  if curl -s --connect-timeout 1 --max-time 3 "http://localhost:${SMOKE_PORT}/" >/dev/null 2>&1; then
     READY=true
     break
   fi
@@ -171,14 +206,15 @@ done
 
 if [ "$READY" = false ]; then
   err "wrangler dev did not become ready within 15s."
-  kill "$WRANGLER_PID" 2>/dev/null || true
   exit 3
 fi
 log "✓ wrangler dev ready (PID=${WRANGLER_PID})"
 
 SMOKE_FAILED=false
 for endpoint in "${SMOKE_ENDPOINTS[@]}"; do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$endpoint" 2>&1 || echo "000")
+  if ! STATUS=$(curl -s --connect-timeout 1 --max-time 3 -o /dev/null -w "%{http_code}" "$endpoint" 2>/dev/null); then
+    STATUS="000"
+  fi
   if [ "$STATUS" = "200" ]; then
     log "  ✓ ${endpoint} → ${STATUS}"
   else
@@ -187,8 +223,8 @@ for endpoint in "${SMOKE_ENDPOINTS[@]}"; do
   fi
 done
 
-# Kill the dev server regardless
-kill "$WRANGLER_PID" 2>/dev/null || true
+# Stop the dev server before touching production.
+cleanup
 
 if [ "$SMOKE_FAILED" = true ]; then
   err "Local workerd smoke failed."
@@ -201,39 +237,54 @@ log "✓ All local smoke endpoints 200"
 # ════════════════════════════════════════════════════════════════════════════════
 log "══════ STEP 3: Deploy ══════"
 
-# Record version before deploy for potential rollback
+# Record the actual 100%-active production version before deploy. A split
+# deployment is intentionally rejected because choosing a rollback target would
+# otherwise be ambiguous.
 log "Recording current active version…"
-VERSIONS_BEFORE=""
-if command -v jq &>/dev/null; then
-  VERSIONS_BEFORE=$(npx wrangler versions list --config wrangler.jsonc --json 2>/dev/null | jq -r '.[0].id // empty' 2>/dev/null || echo "")
+if ! VERSIONS_BEFORE=$(read_active_version); then
+  err "Could not resolve a single 100%-active production version; refusing to deploy without an unambiguous rollback target."
+  exit 1
 fi
-if [ -z "$VERSIONS_BEFORE" ]; then
-  # fallback: grep for first version ID in text output
-  VERSIONS_BEFORE=$(npx wrangler versions list --config wrangler.jsonc 2>/dev/null | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1 || echo "")
-fi
-log "Current active version before deploy: ${VERSIONS_BEFORE:-unknown}"
+log "Current active version before deploy: ${VERSIONS_BEFORE}"
+ROLLBACK_TARGET="${VERSIONS_BEFORE}"
 
 log "Running wrangler deploy…"
-DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler.jsonc 2>&1) || {
+if ! DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler.jsonc 2>&1); then
   err "wrangler deploy failed."
   echo "$DEPLOY_OUTPUT"
-  exit 4
-}
-
-# Extract new version from output
-NEW_VERSION=$(echo "$DEPLOY_OUTPUT" | grep -oE 'Current Version ID: [a-f0-9-]+' | awk '{print $NF}' || echo "")
-if [ -z "$NEW_VERSION" ]; then
-  # fallback: grep for any version-id pattern
-  NEW_VERSION=$(echo "$DEPLOY_OUTPUT" | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | tail -1 || echo "")
-fi
-if [ -z "$NEW_VERSION" ]; then
-  err "Could not determine new version ID from deploy output."
+  if ACTIVE_VERSION=$(read_active_version) && [ "$ACTIVE_VERSION" != "$ROLLBACK_TARGET" ]; then
+    warn "Active version changed despite the failed command; rolling back to ${ROLLBACK_TARGET}."
+    npx wrangler rollback "$ROLLBACK_TARGET" --config wrangler.jsonc --message "auto-rollback: deploy command failed" --yes 2>&1 || {
+      err "Rollback failed! Manual intervention required."
+    }
+  fi
   exit 4
 fi
-log "✓ Deployed: ${NEW_VERSION}"
 
-# Set rollback target
-ROLLBACK_TARGET="${VERSIONS_BEFORE}"
+# Verify the production deployment state instead of trusting CLI prose. This
+# also catches a misleading exit 0 that did not activate a new Worker version.
+NEW_VERSION=""
+for attempt in $(seq 1 5); do
+  if ACTIVE_VERSION=$(read_active_version) && [ "$ACTIVE_VERSION" != "$ROLLBACK_TARGET" ]; then
+    NEW_VERSION="$ACTIVE_VERSION"
+    break
+  fi
+  sleep 2
+done
+
+if [ -z "$NEW_VERSION" ]; then
+  err "Deploy returned success but no new single 100%-active version was observed."
+  if ACTIVE_VERSION=$(read_active_version) && [ "$ACTIVE_VERSION" = "$ROLLBACK_TARGET" ]; then
+    err "Previous version is still active; no rollback is necessary."
+  else
+    warn "Production state is ambiguous; rolling back to ${ROLLBACK_TARGET}."
+    npx wrangler rollback "$ROLLBACK_TARGET" --config wrangler.jsonc --message "auto-rollback: post-deploy version verification failed" --yes 2>&1 || {
+      err "Rollback failed! Manual intervention required."
+    }
+  fi
+  exit 4
+fi
+log "✓ Deployed and active at 100%: ${NEW_VERSION}"
 
 # ════════════════════════════════════════════════════════════════════════════════
 # STEP 4 — Production health check
@@ -248,7 +299,9 @@ HEALTH_MAX_RETRIES=3
 for endpoint in "${HEALTH_ENDPOINTS[@]}"; do
   OK=false
   for attempt in $(seq 1 $HEALTH_MAX_RETRIES); do
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" --noproxy '*' "$endpoint" 2>&1 || echo "000")
+    if ! STATUS=$(curl -s --connect-timeout 5 --max-time 15 -o /dev/null -w "%{http_code}" --noproxy '*' "$endpoint" 2>/dev/null); then
+      STATUS="000"
+    fi
     if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ]; then
       log "  ✓ ${endpoint} → ${STATUS}"
       OK=true
@@ -271,17 +324,28 @@ if [ "$HEALTH_FAILED" = true ]; then
 
   if [ -n "$ROLLBACK_TARGET" ]; then
     log "Rolling back to version ${ROLLBACK_TARGET}…"
-    npx wrangler rollback "$ROLLBACK_TARGET" --config wrangler.jsonc --message "auto-rollback: health check failed for ${NEW_VERSION}" 2>&1 || {
+    npx wrangler rollback "$ROLLBACK_TARGET" --config wrangler.jsonc --message "auto-rollback: health check failed for ${NEW_VERSION}" --yes 2>&1 || {
       err "Rollback failed! Manual intervention required."
       exit 5
     }
 
-    # Verify rollback
+    # Verify rollback with the same retry policy as the first health check.
     sleep 2
     ROLLBACK_OK=true
     for endpoint in "${HEALTH_ENDPOINTS[@]}"; do
-      STATUS=$(curl -s -o /dev/null -w "%{http_code}" --noproxy '*' "$endpoint" 2>&1 || echo "000")
-      if [ "$STATUS" != "200" ] && [ "$STATUS" != "301" ] && [ "$STATUS" != "302" ] && [ "$STATUS" != "307" ]; then
+      OK=false
+      for attempt in $(seq 1 $HEALTH_MAX_RETRIES); do
+        if ! STATUS=$(curl -s --connect-timeout 5 --max-time 15 -o /dev/null -w "%{http_code}" --noproxy '*' "$endpoint" 2>/dev/null); then
+          STATUS="000"
+        fi
+        if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ]; then
+          log "  ✓ post-rollback ${endpoint} → ${STATUS}"
+          OK=true
+          break
+        fi
+        sleep 1
+      done
+      if [ "$OK" = false ]; then
         err "Post-rollback ${endpoint} → ${STATUS}"
         ROLLBACK_OK=false
       fi
@@ -306,6 +370,6 @@ log "Deploy complete. 🎉"
 
 # Print rollback command for reference
 echo ""
-echo "To rollback manually:  npx wrangler rollback ${ROLLBACK_TARGET} --config wrangler.jsonc"
+echo "To rollback manually:  npx wrangler rollback ${ROLLBACK_TARGET} --config wrangler.jsonc --yes"
 
 exit 0
