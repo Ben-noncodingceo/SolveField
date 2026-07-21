@@ -96,7 +96,7 @@ pnpm exec playwright test ingestion.e2e.spec.ts --config=playwright.config.ts --
 CLOUDFLARE_API_TOKEN=<token> bash scripts/deploy.sh
 ```
 
-`scripts/deploy.sh` 会先以只读方式校验远端 `payload_migrations` 和每个 schema sentinel，未应用/半应用迁移会阻断发布；然后清空 `.next/.open-next`，依次做 Next + OpenNext 全量构建、D1/R2/KV binding dry-run 和本地 workerd 三端 smoke。发布前通过 `wrangler deployments status --json` 锁定当前唯一 100% 流量版本作为 rollback target；上线后五个生产端点带重试验收，失败则非交互 `rollback --yes` 并重新验证。`--skip-db` 只用于已有独立迁移证据的应急场景；它会在输出中明确警告。
+`scripts/deploy.sh` 会先以只读方式校验远端 `payload_migrations` 和每个 schema sentinel，未应用/半应用迁移会阻断发布；然后清空 `.next/.open-next`，依次做 Next + OpenNext 全量构建、D1/R2/KV binding dry-run 和本地 workerd 三端 smoke。Smoke 会在 `mktemp` 隔离的 D1 状态中应用本地迁移，并生成一次性非生产 `PAYLOAD_SECRET`，因此新机器不需复制 `.dev.vars` 或生产 secret，退出时临时进程/DB/secret 一并清理。发布前通过 `wrangler deployments status --json` 锁定当前唯一 100% 流量版本作为 rollback target；上线后五个生产端点带重试验收，失败则非交互 `rollback --yes` 并重新验证。`--skip-db` 只用于已有独立迁移证据的应急场景；它会在输出中明确警告。
 
 细节与已知限制（sharp 不可用、admin 包体积、D1 beta 等）见 ADR。
 

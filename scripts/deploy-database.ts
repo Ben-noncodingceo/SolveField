@@ -12,13 +12,23 @@ import { cloudflareEnvironmentArgs, runCommand } from './deploy-utils'
 type D1Result<Row> = { results?: Row[]; success?: boolean }
 type CountRow = { count: number }
 
-const unknownArgs = process.argv
-  .slice(2)
-  .filter((arg) => arg !== '--local' && arg !== '--check-only' && arg !== '--')
-if (unknownArgs.length > 0) throw new Error(`Unknown argument(s): ${unknownArgs.join(', ')}`)
+const cliArgs = process.argv.slice(2).filter((arg) => arg !== '--')
+let isLocal = false
+let isCheckOnly = false
+let persistTo: string | undefined
+for (let index = 0; index < cliArgs.length; index += 1) {
+  const arg = cliArgs[index]
+  if (arg === '--local') isLocal = true
+  else if (arg === '--check-only') isCheckOnly = true
+  else if (arg === '--persist-to') {
+    const value = cliArgs[index + 1]
+    if (!value || value.startsWith('--')) throw new Error('--persist-to requires a directory')
+    persistTo = value
+    index += 1
+  } else throw new Error(`Unknown argument: ${arg}`)
+}
+if (persistTo && !isLocal) throw new Error('--persist-to is supported only with --local')
 
-const isLocal = process.argv.includes('--local')
-const isCheckOnly = process.argv.includes('--check-only')
 if (!isLocal && !process.env.CLOUDFLARE_API_TOKEN) {
   throw new Error(
     `Remote database ${isCheckOnly ? 'verification' : 'deployment'} requires CLOUDFLARE_API_TOKEN`,
@@ -26,7 +36,9 @@ if (!isLocal && !process.env.CLOUDFLARE_API_TOKEN) {
 }
 
 const environmentArgs = cloudflareEnvironmentArgs()
-const targetArgs = isLocal ? ['--local'] : ['--remote', ...environmentArgs]
+const targetArgs = isLocal
+  ? ['--local', ...(persistTo ? ['--persist-to', persistTo] : [])]
+  : ['--remote', ...environmentArgs]
 
 const runWrangler = (args: string[], capture = false): string =>
   runCommand('pnpm', ['exec', 'wrangler', ...args], { capture })

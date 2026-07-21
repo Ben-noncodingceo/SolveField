@@ -38,6 +38,8 @@ SMOKE_ENDPOINTS=("http://localhost:${SMOKE_PORT}/" "http://localhost:${SMOKE_POR
 SKIP_DB=false
 ROLLBACK_TARGET=""  # filled at deploy step if we need to rollback
 WRANGLER_PID=""
+SMOKE_PERSIST_DIR=""
+SMOKE_PAYLOAD_SECRET=""
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -67,6 +69,11 @@ cleanup() {
     wait "$WRANGLER_PID" 2>/dev/null || true
     WRANGLER_PID=""
   fi
+  if [ -n "$SMOKE_PERSIST_DIR" ]; then
+    node -e 'require("node:fs").rmSync(process.argv[1], { recursive: true, force: true })' "$SMOKE_PERSIST_DIR"
+    SMOKE_PERSIST_DIR=""
+  fi
+  SMOKE_PAYLOAD_SECRET=""
 }
 
 on_signal() {
@@ -190,8 +197,17 @@ log "✓ Bindings verified (D1, R2, KV)"
 # ════════════════════════════════════════════════════════════════════════════════
 log "══════ STEP 2: Workerd local smoke ══════"
 
+log "Preparing isolated local D1 and one-time Payload secret…"
+SMOKE_PERSIST_DIR=$(mktemp -d)
+SMOKE_PAYLOAD_SECRET=$(node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("hex"))')
+if ! pnpm exec tsx scripts/deploy-database.ts --local --persist-to "$SMOKE_PERSIST_DIR"; then
+  err "Could not initialize the isolated local D1 schema for smoke testing."
+  exit 3
+fi
+
 log "Starting wrangler dev --local on port ${SMOKE_PORT}…"
-npx wrangler dev --local --port "$SMOKE_PORT" --config wrangler.jsonc &
+npx wrangler dev --local --persist-to "$SMOKE_PERSIST_DIR" --port "$SMOKE_PORT" \
+  --config wrangler.jsonc --var "PAYLOAD_SECRET:${SMOKE_PAYLOAD_SECRET}" &
 WRANGLER_PID=$!
 
 # Wait for server to be ready (max 15s)
