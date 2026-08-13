@@ -119,10 +119,10 @@ export async function validateIngestionRequest(
       }
     }
   } catch (schemaErr) {
-    // Generated ajv standalone validator may crash in Workers due to bundler
-    // tree-shaking of schema/helper variables referenced by closure.
+    // A validator runtime failure must fail closed. Treating an unchecked
+    // manifest as schema-valid would bypass the primary ingestion boundary.
     const msg = schemaErr instanceof Error ? schemaErr.message : String(schemaErr)
-    addIssue(issues, 'SCHEMA_VALIDATOR_CRASH', 'warning', '/', `Schema validator threw (bundler compatibility): ${msg}. Manifest treated as schema-valid.`)
+    addIssue(issues, 'SCHEMA_VALIDATOR_CRASH', 'error', '/', `Schema validator threw: ${msg}. Ingestion is blocked.`)
   }
 
   const suppliedSources = new Map((body?.sourceFiles ?? []).map((file) => [file.fileId, file.dataBase64]))

@@ -21,6 +21,8 @@ describe('precompiled ingest schema validator', () => {
     const checkedIn = readFileSync(join(process.cwd(), OUTPUT_RELATIVE_PATH), 'utf8')
     expect(checkedIn).not.toContain('new Function')
     expect(checkedIn).not.toContain('require(')
+    expect(checkedIn).not.toContain('ajv/dist/runtime')
+    expect(checkedIn).not.toContain('ajv-formats/dist')
   })
 
   it('accepts the frozen contract example and rejects a broken manifest', () => {
@@ -29,5 +31,27 @@ describe('precompiled ingest schema validator', () => {
     delete broken.importId
     expect(validateSchema(broken)).toBe(false)
     expect(validateSchema.errors?.some((error: { message?: string }) => error.message?.includes('importId'))).toBe(true)
+  })
+
+  it('validates Worker-safe string lengths and strict formats', () => {
+    const withUnicode = structuredClone(example)
+    withUnicode.item.titleOriginal = '🧪'
+    expect(validateSchema(withUnicode)).toBe(true)
+
+    const invalidDateTime = structuredClone(example)
+    invalidDateTime.sourceBundle.retrievedAt = '2026-02-30T10:00:00Z'
+    expect(validateSchema(invalidDateTime)).toBe(false)
+
+    const relativeURL = structuredClone(example)
+    relativeURL.sourceBundle.sourceUrl = '/not-an-absolute-uri'
+    expect(validateSchema(relativeURL)).toBe(false)
+
+    const urnURL = structuredClone(example)
+    urnURL.sourceBundle.sourceUrl = 'urn:uuid:12345678-1234-1234-1234-123456789abc'
+    expect(validateSchema(urnURL)).toBe(true)
+
+    const malformedEscape = structuredClone(example)
+    malformedEscape.sourceBundle.sourceUrl = 'https://example.test/%GG'
+    expect(validateSchema(malformedEscape)).toBe(false)
   })
 })

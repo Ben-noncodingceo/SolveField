@@ -36,8 +36,7 @@ export const generateValidatorCode = (): string => {
     '// Rebuild with: pnpm run generate:schema-validator',
     '// Source of truth: docs/ingestion-v1/schema.json (frozen ingest v1 contract).',
     '// Precompiled because Cloudflare Workers disallow runtime code generation.',
-    'import __ucs2length from "ajv/dist/runtime/ucs2length";',
-    'import { fullFormats as __fullFormats } from "ajv-formats/dist/formats";',
+    'import { fullFormats as __fullFormats, ucs2length as __ucs2length } from "./schemaValidator.runtime";',
     '',
   ].join('\n')
   return `${banner}${code}\n`
