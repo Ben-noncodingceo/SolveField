@@ -67,6 +67,10 @@ const contentHashInput = (manifest: Record<string, any>) => {
       sourcePage: image.sourcePage,
       sourceRegion: image.sourceRegion,
       placementMarker: image.placementMarker,
+      // Keep frozen legacy hashes stable when placementField is omitted. New
+      // answer-only revisions include it, so changing the canonical field is
+      // still content-addressed.
+      ...(image.placementField === undefined ? {} : { placementField: image.placementField }),
     })),
   }
 }
@@ -228,10 +232,12 @@ export async function validateIngestionRequest(
     if (!allowedTags.has(tag)) addIssue(issues, 'TAXONOMY_TAG_UNKNOWN', 'error', `/item/tags/${index}`, `Unknown taxonomy key: ${tag}`)
   }
 
-  const contentFields = ['contentOriginal', 'contentZh', 'contentEn', 'answerOriginal', 'answerZh', 'answerEn']
+  const contentFields = ['contentOriginal', 'contentZh', 'contentEn', 'answerOriginal', 'answerZh', 'answerEn'] as const
+  type ContentField = (typeof contentFields)[number]
   let formulaCount = 0
-  const markerCounts = new Map<string, number>()
-  const originalMarkerCounts = new Map<string, number>()
+  const markerCountsByField = new Map<ContentField, Map<string, number>>(
+    contentFields.map((field) => [field, new Map<string, number>()]),
+  )
   _step = 'katex-markers';  for (const field of contentFields) {
     const value = manifest.item?.[field]
     if (typeof value !== 'string') continue
@@ -241,15 +247,22 @@ export async function validateIngestionRequest(
       if (rendered.includes('katex-error')) addIssue(issues, 'KATEX_RENDER_ERROR', 'error', `/item/${field}`, `KaTeX could not render formula ${formulaCount}.`)
     }
     for (const match of value.matchAll(/asset:\/\/([a-z0-9][a-z0-9-]{1,63})/g)) {
-      markerCounts.set(match[1], (markerCounts.get(match[1]) ?? 0) + 1)
-      if (field === 'contentOriginal') originalMarkerCounts.set(match[1], (originalMarkerCounts.get(match[1]) ?? 0) + 1)
+      const fieldCounts = markerCountsByField.get(field)!
+      fieldCounts.set(match[1], (fieldCounts.get(match[1]) ?? 0) + 1)
     }
   }
-  for (const key of imageKeys) {
-    if (originalMarkerCounts.get(key) !== 1) addIssue(issues, 'ASSET_MARKER_CARDINALITY', 'error', '/item/contentOriginal', `asset://${key} must appear exactly once in contentOriginal.`)
+  const mappedImageKeys = new Set<string>()
+  for (const image of manifest.item?.images ?? []) {
+    const placementField = (image.placementField ?? 'contentOriginal') as ContentField
+    if (!contentFields.includes(placementField)) continue
+    const count = markerCountsByField.get(placementField)?.get(image.assetKey) ?? 0
+    if (count === 1) mappedImageKeys.add(image.assetKey)
+    else addIssue(issues, 'ASSET_MARKER_CARDINALITY', 'error', `/item/${placementField}`, `asset://${image.assetKey} must appear exactly once in ${placementField}; found ${count}.`)
   }
-  for (const key of markerCounts.keys()) {
-    if (!imageKeys.has(key)) addIssue(issues, 'UNKNOWN_ASSET_MARKER', 'error', '/item/contentOriginal', `asset://${key} has no matching image record.`)
+  for (const field of contentFields) {
+    for (const key of markerCountsByField.get(field)!.keys()) {
+      if (!imageKeys.has(key)) addIssue(issues, 'UNKNOWN_ASSET_MARKER', 'error', `/item/${field}`, `asset://${key} has no matching image record.`)
+    }
   }
 
   _step = 'content-hash';  const computedContentHash = await computeContentHash(manifest)
@@ -281,7 +294,7 @@ export async function validateIngestionRequest(
     },
     imageMapping: {
       expectedCount: imageKeys.size,
-      mappedCount: [...imageKeys].filter((key) => originalMarkerCounts.get(key) === 1).length,
+      mappedCount: mappedImageKeys.size,
       allPlacementMarkersResolved: !issues.some((issue) => issue.code.includes('MARKER')),
     },
     overallConfidence: Math.min(...Object.values(manifest.fieldAssessments ?? {}).map((assessment: any) => assessment.confidence), 1),

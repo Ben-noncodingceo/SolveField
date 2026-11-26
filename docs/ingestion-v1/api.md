@@ -36,7 +36,7 @@ Create the record with all three v1 scopes: `ingestion:create`, `ingestion:updat
 
 `manifest` must be the complete Draft-07 document; the abbreviated object above only illustrates the envelope. `sourceFiles` must contain every `sourceBundle.files[].fileId`. `assetFiles` may be omitted during extraction, but missing image bytes/hash/R2 keys remain a review warning and block approval.
 
-The server independently recomputes schema validity, PDF byte size/page count/file hash, bundle/content/idempotency hashes, taxonomy, page references, bounding boxes, placement markers, confidence gates, and KaTeX. Client `validation.schemaValid` and `taxonomyValid` are ignored.
+The server independently recomputes schema validity, PDF byte size/page count/file hash, bundle/content/idempotency hashes, taxonomy, page references, bounding boxes, placement markers, confidence gates, and KaTeX. Client `validation.schemaValid` and `taxonomyValid` are ignored. Each image may declare `placementField`; omitted legacy assets default to `contentOriginal`, while official-solution figures use `role: "solution-figure"` plus an explicit `answerOriginal`, `answerZh`, or `answerEn` placement. The marker must occur exactly once in that canonical field.
 
 - First valid draft: `201`.
 - Same idempotency key: `200`, same job/item.
@@ -49,7 +49,7 @@ The server independently recomputes schema validity, PDF byte size/page count/fi
 
 ## Human approval
 
-`POST /api/ingestion/jobs/:id/approve` ignores service-token authority and requires an authenticated Payload admin session. It re-reads private R2 objects, revalidates the current admin-edited item, blocks missing/unverified assets, then performs one D1 transaction that creates or updates Competition, Media, and the published Problem and writes reviewer/time/before-after audit data back to the staging records.
+`POST /api/ingestion/jobs/:id/approve` ignores service-token authority and requires an authenticated Payload admin session. It re-reads private R2 objects, revalidates the current admin-edited item, blocks missing/unverified assets, then performs one D1 transaction that creates or updates Competition, Media, and the published Problem and writes reviewer/time/before-after audit data back to the staging records. Marker replacement runs across all six question/answer language fields, so an approved answer-only revision updates the existing Problem rather than creating a second public problem.
 
 `POST /api/ingestion/jobs/:id/reject` is also admin-session-only and requires `{ "reason": "..." }`. It atomically marks job/item rejected and permanently records the reason, reviewer, and time; resubmission is a new revision rather than an overwrite.
 

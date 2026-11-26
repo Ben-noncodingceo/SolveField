@@ -36,11 +36,12 @@
 ## D. 图片
 
 - [ ] PDF 中每幅解题相关图片都有一个 `images[]` 项和唯一 `assetKey`。
-- [ ] 正文每个 `asset://...` marker 恰好对应一个 image，且每个 image 被引用。【阻断】
+- [ ] 每个 `asset://...` marker 恰好对应一个 image；每个 image 在其 `placementField`（旧题干图默认 `contentOriginal`）中恰好出现一次。【阻断】
+- [ ] 官方解析图使用 `role=solution-figure`，显式声明实际 `answer*` placement field；不得在 `contentOriginal` 伪造 marker。【阻断】
 - [ ] bbox 坐标为 0–1、左上原点，满足边界条件；crop 不含无关页眉页脚且不截标注。
 - [ ] crop 清晰可读，生成 raw-byte SHA-256，并上传受控 R2 key。【阻断】
 - [ ] alt 说明图中物理关系/方向/关键标注，不只写“图 1”。
-- [ ] caption、source page、正文位置正确。
+- [ ] caption、source page、题干/解析位置正确。
 
 ## E. 难度与标签
 
@@ -80,4 +81,3 @@
 - [ ] 难度推荐 4，标签只使用 taxonomy v1 的五个既有 key。
 - [ ] answer 三语字段为 `null`，因为来源只有题干。
 - [ ] 中文翻译、图片 alt、难度和标签由 Ted/管理员人工确认后才可发布。
-

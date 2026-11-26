@@ -65,7 +65,7 @@
 | `contentOriginal` | Markdown + LaTeX string，非空 | `Problems.contentOriginal` |
 | `contentZh/contentEn` | string 或 `null` | `Problems.contentZh/contentEn` |
 | `answerOriginal/answerZh/answerEn` | string 或 `null` | 对应解析字段；题目 PDF 无答案时必须为 `null`，不能编造 |
-| `images[]` | array，可空 | 审核后映射 Media/R2，并替换 `asset://...` 标记 |
+| `images[]` | array，可空 | 审核后映射 Media/R2，并替换题干或解析字段中的 `asset://...` 标记 |
 | `difficulty` | integer 1–5，非空 | `Problems.difficulty`，仅推荐值 |
 | `tags[]` | taxonomy key array，可空 | `Problems.tags`；必须全部存在于 `tags-taxonomy.json` |
 | `sourcePages[]` | page ref array，非空 | provenance；指向每个拆分 PDF 内页码与原卷印刷页码 |
@@ -115,7 +115,9 @@
 
 ### 图片
 
-- 题干先用 `![alt](asset://asset-key)` 占位；审核发布时才替换成受控 Media URL/关系。
+- 题干或解析先用 `![alt](asset://asset-key)` 占位；审核发布时才替换成受控 Media URL/关系。
+- 每个图片用 `placementField` 声明其唯一 canonical marker 所在字段，可选值为三种 `content*` 或三种 `answer*` 字段。旧题干图片省略该字段时兼容地按 `contentOriginal` 处理；新的解析图必须显式写 `placementField: "answerOriginal"`（或实际 canonical 翻译字段），且 `role: "solution-figure"`。
+- validator 要求 marker 在声明的 `placementField` 中恰好出现一次；同一 marker 可在其它语言版本中再次出现。解析图不需要、也不应为了通过校验而伪造 `contentOriginal` marker。
 - `sourceRegion` 使用 0–1 归一化坐标，原点为页面左上角；必须满足 `x+width≤1`、`y+height≤1`（API 增加交叉字段校验）。
 - `alt` 描述解题所需信息，不能只写“图 1”；图片中的方向、标注、装置关系应被概括。
 - 图片裁出后按原始字节计算 `contentHash`，上传 R2 后写 `r2ObjectKey`。二者未生成时可为 `null`，但不能进入管理员发布状态。
@@ -147,11 +149,14 @@
       "contentHash": null,
       "sourcePage": { "fileId": "...", "pageIndex": 1, "printedPageLabel": "..." },
       "sourceRegion": { "unit": "normalized", "origin": "top-left", "x": 0, "y": 0, "width": 1, "height": 1 },
-      "placementMarker": "asset://..."
+      "placementMarker": "asset://...",
+      "placementField": "answerOriginal"
     }
   ]
 }
 ```
+
+为保持既有冻结 manifest 的 hash 稳定，旧图片省略 `placementField` 时，JCS 输入也继续省略该属性；新 manifest 一旦显式声明，该属性必须进入 `contentHash`。
 
 5. `sourceItemKey = SHA-256(bundleHashHex + "\n" + problemCode)`。
 6. `idempotencyKey = "ingest-v1:" + sourceItemKeyHex`。同一来源和题号重试必须返回同一 draft（HTTP 200），首次创建返回 201。
@@ -185,4 +190,3 @@ IPhO 2026 T1 样例的三个源文件 hash、bundle hash 与 idempotency key 都
 - 标签推荐：`fluid-mechanics`, `gravitation-orbits`, `quantum-basics`, `energy-momentum`, `approximation-perturbation`。
 - 三幅图全部建立 source page、归一化 bbox、asset marker 与中英文 alt；crop/hash/R2 仍需开发流水线生成，所以保持复核状态。
 - 题目 PDF 无解析，三个 answer 字段为 `null`；不能把既有教研解析伪装为官方源内容。
-

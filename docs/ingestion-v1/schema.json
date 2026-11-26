@@ -199,12 +199,17 @@
       ],
       "properties": {
         "assetKey": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
-        "role": { "type": "string", "enum": ["problem-figure", "data-table", "decorative"] },
+        "role": { "type": "string", "enum": ["problem-figure", "solution-figure", "data-table", "decorative"] },
         "sourcePage": { "$ref": "#/definitions/SourcePageRef" },
         "sourceRegion": { "$ref": "#/definitions/BoundingBox" },
         "placementMarker": {
           "type": "string",
           "pattern": "^asset://[a-z0-9][a-z0-9-]{1,63}$"
+        },
+        "placementField": {
+          "description": "Canonical Markdown field in which placementMarker must appear exactly once. Omit for legacy question assets, which default to contentOriginal.",
+          "type": "string",
+          "enum": ["contentOriginal", "contentZh", "contentEn", "answerOriginal", "answerZh", "answerEn"]
         },
         "altOriginal": { "type": "string", "minLength": 1 },
         "altZh": { "type": ["string", "null"] },

@@ -33,6 +33,19 @@ describe('precompiled ingest schema validator', () => {
     expect(validateSchema.errors?.some((error: { message?: string }) => error.message?.includes('importId'))).toBe(true)
   })
 
+  it('accepts answer-only solution figure placement and rejects unknown placement fields', () => {
+    const answerAsset = structuredClone(example) as unknown as {
+      item: { images: Array<Record<string, unknown>> }
+      [key: string]: unknown
+    }
+    answerAsset.item.images[0].role = 'solution-figure'
+    answerAsset.item.images[0].placementField = 'answerOriginal'
+    expect(validateSchema(answerAsset)).toBe(true)
+
+    answerAsset.item.images[0].placementField = 'answerPreview'
+    expect(validateSchema(answerAsset)).toBe(false)
+  })
+
   it('validates Worker-safe string lengths and strict formats', () => {
     const withUnicode = structuredClone(example)
     withUnicode.item.titleOriginal = '🧪'

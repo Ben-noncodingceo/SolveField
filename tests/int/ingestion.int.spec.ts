@@ -46,6 +46,69 @@ describe('ingestion v1 contract', () => {
     expect(result.issues.map((issue) => issue.code)).toEqual(expect.arrayContaining(['BOUNDING_BOX_OUT_OF_RANGE', 'ASSET_MARKER_MISMATCH']))
   })
 
+  it('allows a solution figure to use answerOriginal as its canonical placement field', async () => {
+    const body = await ingestionSample({ withImages: false })
+    body.manifest.item.answerOriginal = '## Official solution\n\n![Free-body diagram](asset://solution-figure-1)'
+    body.manifest.item.images = [{
+      assetKey: 'solution-figure-1',
+      role: 'solution-figure',
+      sourcePage: { fileId: 'src-t1a', pageIndex: 1, printedPageLabel: 'S1' },
+      sourceRegion: { unit: 'normalized', origin: 'top-left', x: 0.1, y: 0.2, width: 0.5, height: 0.4 },
+      placementMarker: 'asset://solution-figure-1',
+      placementField: 'answerOriginal',
+      altOriginal: 'Free-body diagram used in the official solution.',
+      altZh: null,
+      altEn: null,
+      captionOriginal: null,
+      r2ObjectKey: null,
+      contentHash: null,
+      confidence: 0.99,
+      needsReview: true,
+    }]
+    body.manifest.item.contentHash = await computeContentHash(body.manifest)
+
+    const result = await validateIngestionRequest(body)
+
+    expect(result.hasErrors).toBe(false)
+    expect(result.manifest.validation.imageMapping).toEqual({
+      expectedCount: 1,
+      mappedCount: 1,
+      allPlacementMarkersResolved: true,
+    })
+    expect(result.issues.map((issue) => issue.code)).toContain('IMAGE_BYTES_PENDING')
+  })
+
+  it('enforces marker cardinality in each image\'s declared placement field', async () => {
+    const body = await ingestionSample({ withImages: false })
+    body.manifest.item.answerOriginal = 'No figure marker in this answer.'
+    body.manifest.item.images = [{
+      assetKey: 'solution-figure-1',
+      role: 'solution-figure',
+      sourcePage: { fileId: 'src-t1a', pageIndex: 1, printedPageLabel: 'S1' },
+      sourceRegion: { unit: 'normalized', origin: 'top-left', x: 0.1, y: 0.2, width: 0.5, height: 0.4 },
+      placementMarker: 'asset://solution-figure-1',
+      placementField: 'answerOriginal',
+      altOriginal: 'Free-body diagram used in the official solution.',
+      altZh: null,
+      altEn: null,
+      captionOriginal: null,
+      r2ObjectKey: null,
+      contentHash: null,
+      confidence: 0.99,
+      needsReview: true,
+    }]
+    body.manifest.item.contentHash = await computeContentHash(body.manifest)
+
+    const result = await validateIngestionRequest(body)
+
+    expect(result.hasErrors).toBe(true)
+    expect(result.issues).toContainEqual(expect.objectContaining({
+      code: 'ASSET_MARKER_CARDINALITY',
+      path: '/item/answerOriginal',
+      message: expect.stringContaining('found 0'),
+    }))
+  })
+
   it('blocks confidence below 0.70 and unknown taxonomy keys', async () => {
     const body = await ingestionSample()
     body.manifest.fieldAssessments['/item/contentOriginal'].confidence = 0.69
